@@ -19,32 +19,39 @@ namespace DonkeyKong
        private List<string> m_text;
        private static Tile[,] m_tiles;
        private Texture2D m_wallTex;
-        private Texture2D m_floorTex;
-        private Texture2D m_ladderTex;
-        public override void Draw(GameTime gameTime)
+       private Texture2D m_floorTex;
+       private Texture2D m_ladderTex;
+       private Texture2D m_marioFrontTex;
+       public override void Draw(GameTime gameTime)
         {
             spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
-            if(player != null)
-                player.Draw(gameTime, spriteBatch);
-            
+           
             foreach (Sprite s in spriteList)
                 s.Draw(gameTime, spriteBatch);
-            spriteBatch.End();
+            
 
             foreach (Tile tile in m_tiles)
             {
-                tile.Draw(gameTime, spriteBatch);
+                tile.DrawStill(gameTime, spriteBatch);
             }
+            if (player != null)
+                player.Draw(gameTime, spriteBatch);
+
+            spriteBatch.End();
             base.Draw(gameTime);
         }
         protected override void LoadContent()
         {
+            m_marioFrontTex = Game.Content.Load<Texture2D>("SuperMarioFront");
             m_wallTex = Game.Content.Load<Texture2D>("empty");
             m_floorTex = Game.Content.Load<Texture2D>("bridge");
-            m_ladderTex = Game.Content.Load<Texture2D>("bridgeLadder");
+            m_ladderTex = Game.Content.Load<Texture2D>("ladder");
             spriteBatch = new SpriteBatch(Game.GraphicsDevice);
-            StreamReader sr = new StreamReader("Content/map.txt");
+            StreamReader sr = new StreamReader("../../../Content/map.txt");
             m_text = new List<string>();
+            player = new UserControlledSprite(m_marioFrontTex, new
+                        Vector2(400, 300
+                        ), new Point(m_marioFrontTex.Width, m_marioFrontTex.Height), 0, new Point(1, 1), new Point(0, 0), new Vector2(0, 0), 0);
             while (!sr.EndOfStream)
             {
                 m_text.Add(sr.ReadLine());

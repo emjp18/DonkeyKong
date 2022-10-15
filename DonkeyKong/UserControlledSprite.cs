@@ -13,7 +13,7 @@ namespace DonkeyKong
         private MouseState m_prevMouseState;
         private Vector2 m_destination;
         private bool m_moving = false;
-        private bool m_moveUp = false;
+        
         public UserControlledSprite(Texture2D textureImage, Vector2 position,
                 Point frameSize, int collisionOffset, Point currentFrame, Point sheetSize,
                 Vector2 speed, int millisecondsPerFrame)
