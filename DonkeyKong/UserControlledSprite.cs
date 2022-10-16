@@ -10,10 +10,11 @@ namespace DonkeyKong
 {
     internal class UserControlledSprite : Sprite
     {
-        
+        private bool m_climbingLadder = false;
         private Vector2 m_destination;
         private bool m_moving = false;
         private Vector2 m_dir;
+        private Texture2D m_marioBackTex;
         private void ClampWindow(Rectangle clientBounds, ref Vector2 position)
         {
             if (position.X < 0)
@@ -25,12 +26,13 @@ namespace DonkeyKong
             if (position.Y > clientBounds.Height - m_frameSize.Y)
                 position.Y = clientBounds.Height - m_frameSize.Y;
         }
-        public UserControlledSprite(Texture2D textureImage, Vector2 position,
+        public UserControlledSprite(Texture2D textureImage, Texture2D marioBack, Vector2 position,
                 Point frameSize, int collisionOffset, Point currentFrame, Point sheetSize,
                 float speed, int millisecondsPerFrame)
                 : base(textureImage, position, frameSize, collisionOffset, currentFrame,
                 sheetSize, speed, millisecondsPerFrame)
         {
+            m_marioBackTex = marioBack;
         }
         public override Vector2 direction
         {
@@ -91,27 +93,54 @@ namespace DonkeyKong
             
             base.Update(gameTime, clientBounds);
         }
+        public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
+        {
+            if(m_climbingLadder)
+            {
+                spriteBatch.Draw(m_marioBackTex,
+           m_position,
+           new Rectangle(m_currentFrame.X * m_frameSize.X,
+           m_currentFrame.Y * m_frameSize.Y,
+           m_frameSize.X, m_frameSize.Y),
+           Color.White, 0, Vector2.Zero,
+           1f, SpriteEffects.None, 0);
+            }
+            else
+            {
+                spriteBatch.Draw(m_textureImage,
+           m_position,
+           new Rectangle(m_currentFrame.X * m_frameSize.X,
+           m_currentFrame.Y * m_frameSize.Y,
+           m_frameSize.X, m_frameSize.Y),
+           Color.White, 0, Vector2.Zero,
+           1f, SpriteEffects.None, 0);
+            }
+           
+        }
         public void ChangeDirection(Vector2 dir, Rectangle clientBounds)
         {
             
             Vector2 newDestination = m_position + dir * SpriteManager.g_tilesize;
 
             ClampWindow(clientBounds, ref newDestination);
-            if (SpriteManager.GetTileLadderAtPosition(newDestination)==SpriteManager.TILE_TYPE.LADDER)
+            SpriteManager.TILE_TYPE type = SpriteManager.GetTileTypeAtPosition(newDestination);
+            if (type == SpriteManager.TILE_TYPE.LADDER)
             {
                 if((dir.Y<0 && dir.X == 0)||(dir.X<0&&dir.Y==0) || (dir.X > 0 && dir.Y == 0)|| (dir.Y > 0 && dir.X == 0))
                 {
                     m_destination = newDestination;
                     m_moving = true;
+                    m_climbingLadder = true;
                 }
                
             }
-            else
+            else if(type==SpriteManager.TILE_TYPE.WALL)
             {
                 if (dir.Y==0)
                 {
                     m_destination = newDestination;
                     m_moving = true;
+                    m_climbingLadder = false;
                 }
                 
             }

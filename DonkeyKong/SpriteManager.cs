@@ -22,7 +22,8 @@ namespace DonkeyKong
        private Texture2D m_floorTex;
        private Texture2D m_ladderTex;
        private Texture2D m_marioFrontTex;
-       public override void Draw(GameTime gameTime)
+        private Texture2D m_marioBackTex;
+        public override void Draw(GameTime gameTime)
         {
             spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
            
@@ -42,6 +43,7 @@ namespace DonkeyKong
         }
         protected override void LoadContent()
         {
+            m_marioBackTex = Game.Content.Load<Texture2D>("SuperMarioBack");
             m_marioFrontTex = Game.Content.Load<Texture2D>("SuperMarioFront");
             m_wallTex = Game.Content.Load<Texture2D>("empty");
             m_floorTex = Game.Content.Load<Texture2D>("bridge");
@@ -95,8 +97,8 @@ namespace DonkeyKong
 
             }
             
-            player = new UserControlledSprite(m_marioFrontTex,
-                       new Vector2(Game1.G_W-m_marioFrontTex.Width, Game1.G_H-m_marioFrontTex.Height), 
+            player = new UserControlledSprite(m_marioFrontTex,m_marioBackTex,
+                       new Vector2(Game1.G_W-m_marioFrontTex.Width, Game1.G_H-m_marioFrontTex.Height-m_wallTex.Height), 
                        new Point(m_marioFrontTex.Width, m_marioFrontTex.Height), 0, new Point(1, 1), new Point(0, 0), 50.0f, 0);
             base.LoadContent();
         }
@@ -116,7 +118,7 @@ namespace DonkeyKong
         {
             
         }
-        public static TILE_TYPE GetTileLadderAtPosition(Vector2 vec)
+        public static TILE_TYPE GetTileTypeAtPosition(Vector2 vec)
         {
             
             return m_tiles[(int)vec.X / g_tilesize, (int)vec.Y / g_tilesize].g_type;

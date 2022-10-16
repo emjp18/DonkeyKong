@@ -80,7 +80,7 @@ namespace DonkeyKong
         }
         public void Gravity(ref Vector2 position, GameTime gameTime)
         {
-            SpriteManager.TILE_TYPE type = SpriteManager.GetTileLadderAtPosition(position);
+            SpriteManager.TILE_TYPE type = SpriteManager.GetTileTypeAtPosition(position);
             if (type!= SpriteManager.TILE_TYPE.LADDER)
             {
                 if(!Collide(SpriteManager.GetTileAtPosition(position))&&type == SpriteManager.TILE_TYPE.BRIDGE)
