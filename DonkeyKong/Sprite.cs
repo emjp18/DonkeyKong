@@ -60,6 +60,35 @@ namespace DonkeyKong
                 }
             }
         }
+        protected bool ClampWindow(Rectangle clientBounds, ref Vector2 position)
+        {
+            bool clamped = false;
+            if (position.X < 0)
+            {
+                clamped = true;
+                position.X = 0;
+            }
+                
+            if (position.Y < 0)
+            {
+                clamped = true;
+                position.Y = 0;
+            }
+               
+            if (position.X > clientBounds.Width - m_frameSize.X)
+            {
+                clamped = true;
+                position.X = clientBounds.Width - m_frameSize.X;
+            }
+                
+            if (position.Y > clientBounds.Height - m_frameSize.Y)
+            {
+                clamped = true;
+                position.Y = clientBounds.Height - m_frameSize.Y;
+            }
+             
+            return clamped;
+        }
         public virtual void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(m_textureImage,
@@ -70,7 +99,7 @@ namespace DonkeyKong
             Color.White, 0, Vector2.Zero,
             1f, SpriteEffects.None, 0);
         }
-        public virtual void DrawStill(GameTime gameTime, SpriteBatch spriteBatch)
+        public void DrawStill(GameTime gameTime, SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(m_textureImage, m_position, Color.White);
         }

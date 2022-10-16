@@ -8,33 +8,22 @@ namespace DonkeyKong
 {
     internal class GameStateManager
     {
+        private static readonly GameStateManager instance = new GameStateManager();
         public enum GAMESTATE { GAME, WIN, LOSE, MENU, NONE };
 
         private GAMESTATE m_state = GAMESTATE.MENU;
         public GAMESTATE GetCurrentGameState() { return m_state; }
-
-        public void Update()
+        public void SetCurrentGameState(GAMESTATE state) { m_state = state; }
+        static GameStateManager()
         {
-            switch (m_state)
+        }
+        public static GameStateManager Instance
+        {
+            get
             {
-                case GAMESTATE.WIN:
-                    {
-                        break;
-                    }
-                case GAMESTATE.LOSE:
-                    {
-                        break;
-                    }
-                case GAMESTATE.MENU:
-                    {
-                        break;
-                    }
-                    case GAMESTATE.NONE:
-                    {
-                        break;
-                    }
-
+                return instance;
             }
         }
+       
     }
 }

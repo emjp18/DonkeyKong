@@ -7,8 +7,8 @@ namespace DonkeyKong
     public class Game1 : Game
     {
         private GraphicsDeviceManager _graphics;
-        public const int G_W = 800;
-        public const int G_H = 600;
+        public const int G_W = 920;
+        public const int G_H = 680;
         private SpriteManager m_spriteManager;
         public Game1()
         {
@@ -27,11 +27,12 @@ namespace DonkeyKong
 
         protected override void LoadContent()
         {
-
+            
             _graphics.PreferredBackBufferWidth = G_W;
             _graphics.PreferredBackBufferHeight = G_H;
             _graphics.ApplyChanges();
-            // TODO: use this.Content to load your game content here
+            
+            
         }
 
         protected override void Update(GameTime gameTime)
@@ -39,7 +40,7 @@ namespace DonkeyKong
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            // TODO: Add your update logic here
+           
 
             base.Update(gameTime);
         }
@@ -48,7 +49,7 @@ namespace DonkeyKong
         {
             GraphicsDevice.Clear(Color.Black);
 
-            // TODO: Add your drawing code here
+            
 
             base.Draw(gameTime);
         }

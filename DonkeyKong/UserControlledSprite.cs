@@ -15,17 +15,9 @@ namespace DonkeyKong
         private bool m_moving = false;
         private Vector2 m_dir;
         private Texture2D m_marioBackTex;
-        private void ClampWindow(Rectangle clientBounds, ref Vector2 position)
-        {
-            if (position.X < 0)
-                position.X = 0;
-            if (position.Y < 0)
-                position.Y = 0;
-            if (position.X > clientBounds.Width - m_frameSize.X)
-                position.X = clientBounds.Width - m_frameSize.X;
-            if (position.Y > clientBounds.Height - m_frameSize.Y)
-                position.Y = clientBounds.Height - m_frameSize.Y;
-        }
+        private Texture2D m_marioFrontTex;
+
+
         public UserControlledSprite(Texture2D textureImage, Texture2D marioBack, Vector2 position,
                 Point frameSize, int collisionOffset, Point currentFrame, Point sheetSize,
                 float speed, int millisecondsPerFrame)
@@ -33,6 +25,13 @@ namespace DonkeyKong
                 sheetSize, speed, millisecondsPerFrame)
         {
             m_marioBackTex = marioBack;
+            m_marioFrontTex = textureImage;
+        }
+        public void SetPosition(Vector2 pos)
+        {
+            m_position = pos;
+            m_destination = pos;
+            m_moving = false;
         }
         public override Vector2 direction
         {
@@ -68,6 +67,16 @@ namespace DonkeyKong
                 return inputDirection;
             }
         }
+        public void KnockBack(Vector2 direction)
+        {
+            m_position.X = (int)m_position.X;
+            m_position.Y = (int)m_position.Y;
+            Vector2 newDestination = m_position + direction * SpriteManager.g_tilesizeY;
+            m_destination = newDestination;
+            m_moving = true;
+            m_dir = direction;
+
+        }
         public override void Update(GameTime gameTime, Rectangle clientBounds)
         {
             
@@ -89,33 +98,19 @@ namespace DonkeyKong
                 }
             }
 
-           
-            
             base.Update(gameTime, clientBounds);
         }
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
             if(m_climbingLadder)
             {
-                spriteBatch.Draw(m_marioBackTex,
-           m_position,
-           new Rectangle(m_currentFrame.X * m_frameSize.X,
-           m_currentFrame.Y * m_frameSize.Y,
-           m_frameSize.X, m_frameSize.Y),
-           Color.White, 0, Vector2.Zero,
-           1f, SpriteEffects.None, 0);
+                m_textureImage = m_marioBackTex;
             }
             else
             {
-                spriteBatch.Draw(m_textureImage,
-           m_position,
-           new Rectangle(m_currentFrame.X * m_frameSize.X,
-           m_currentFrame.Y * m_frameSize.Y,
-           m_frameSize.X, m_frameSize.Y),
-           Color.White, 0, Vector2.Zero,
-           1f, SpriteEffects.None, 0);
+                m_textureImage = m_marioFrontTex;
             }
-           
+            base.Draw(gameTime, spriteBatch);
         }
         public void ChangeDirection(Vector2 dir, Rectangle clientBounds)
         {
@@ -123,6 +118,7 @@ namespace DonkeyKong
             Vector2 newDestination = m_position + dir * SpriteManager.g_tilesize;
 
             ClampWindow(clientBounds, ref newDestination);
+            
             SpriteManager.TILE_TYPE type = SpriteManager.GetTileTypeAtPosition(newDestination);
             if (type == SpriteManager.TILE_TYPE.LADDER)
             {
@@ -136,7 +132,7 @@ namespace DonkeyKong
             }
             else if(type==SpriteManager.TILE_TYPE.WALL)
             {
-                if (dir.Y==0)
+                if (dir.Y==0||m_climbingLadder)
                 {
                     m_destination = newDestination;
                     m_moving = true;
@@ -144,6 +140,7 @@ namespace DonkeyKong
                 }
                 
             }
+           
         }
     }
 }
