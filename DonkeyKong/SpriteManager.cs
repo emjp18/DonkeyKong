@@ -226,11 +226,9 @@ namespace DonkeyKong
                             s.UpdateEnemyFire(gameTime, Game.Window.ClientBounds);
                             if (m_player.Collide(s))
                             {
-                                if(m_player.KnockBack(s.direction, Game.Window.ClientBounds))
-                                {
-                                    m_player.g_lives--;
-                                }
-                                
+                                m_player.KnockBack(s.direction, Game.Window.ClientBounds);
+
+
                             }
                         }
                             

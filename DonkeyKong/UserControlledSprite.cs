@@ -16,8 +16,8 @@ namespace DonkeyKong
         private Vector2 m_dir;
         private Texture2D m_marioBackTex;
         private Texture2D m_marioFrontTex;
-        public int g_lives = 3;
-
+        public int g_lives = 5;
+        private bool m_knocked = false;
         public UserControlledSprite(Texture2D textureImage, Texture2D marioBack, Vector2 position,
                 Point frameSize, int collisionOffset, Point currentFrame, Point sheetSize,
                 float speed, int millisecondsPerFrame)
@@ -39,6 +39,7 @@ namespace DonkeyKong
             {
                
                 Vector2 inputDirection = Vector2.Zero;
+              
                 if (Keyboard.GetState().IsKeyDown(Keys.Left))
                 {
                     inputDirection.X = -1;
@@ -69,14 +70,17 @@ namespace DonkeyKong
         }
         public bool KnockBack(Vector2 direction, Rectangle clientBounds)
         {
+            m_knocked = true;
             Vector2 newDestination = m_position + direction * SpriteManager.g_tilesizeY;
             if(!ClampWindow(clientBounds, ref newDestination)&& !m_climbingLadder)
             {
                 m_destination = newDestination;
                 m_moving = true;
                 m_dir = direction;
+                
                 return true;
             }
+            
             return false;
 
         }
@@ -84,7 +88,7 @@ namespace DonkeyKong
         {
 
             
-            if (!m_moving)
+            if (!m_moving&&!m_knocked)
             {
                 m_dir = direction;
                 ChangeDirection(m_dir, clientBounds);
@@ -98,6 +102,9 @@ namespace DonkeyKong
                 {
                     m_position = m_destination;
                     m_moving = false;
+                    if (m_knocked)
+                        g_lives--;
+                    m_knocked = false;
                 }
             }
            
