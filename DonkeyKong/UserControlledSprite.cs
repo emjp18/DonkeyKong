@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.VisualBasic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -70,14 +71,15 @@ namespace DonkeyKong
         }
         public bool KnockBack(Vector2 direction, Rectangle clientBounds)
         {
-            m_knocked = true;
+            Math.Clamp(direction.X, 0,1);
+            Math.Clamp(direction.Y, 0, 1);
             Vector2 newDestination = m_position + direction * SpriteManager.g_tilesizeY;
             if(!ClampWindow(clientBounds, ref newDestination)&& !m_climbingLadder)
             {
                 m_destination = newDestination;
                 m_moving = true;
                 m_dir = direction;
-                
+                m_knocked = true;
                 return true;
             }
             

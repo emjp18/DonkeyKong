@@ -65,7 +65,7 @@ namespace DonkeyKong
                 }
             }
         }
-        protected bool ClampWindow(Rectangle clientBounds, ref Vector2 position)
+        public bool ClampWindow(Rectangle clientBounds, ref Vector2 position)
         {
             bool clamped = false;
             if (position.X < 0)
@@ -136,5 +136,7 @@ namespace DonkeyKong
             m_position = pos;
            
         }
+        public Texture2D GetTex() { return m_textureImage; }
+        public Vector2 GetPos() { return m_position; }
     }
 }

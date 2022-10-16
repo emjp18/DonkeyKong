@@ -22,20 +22,42 @@ namespace DonkeyKong
         {
             get { return m_direction; }
         }
-        public void RandomizeSpeed(int min=10, int max = 90) { Random random = new Random(); m_speed = (float)random.Next(min, max); }
+        public void SetDirection(Vector2 direction)
+        {
+            m_direction = direction;
+        }
+        public void RandomizeSpeed(int min=30, int max = 90) { Random random = new Random(); m_speed = (float)random.Next(min, max); }
         public override void Update(GameTime gameTime, Rectangle clientBounds)
         {
            
             m_position += direction;
             base.Update(gameTime, clientBounds);
         }
-        public void UpdateEnemyFire(GameTime gameTime, Rectangle clientBounds)
+        public void UpdateEnemyFire(GameTime gameTime, Rectangle clientBounds, Sprite DK)
         {
             m_direction.Y = 0;
-            if (ClampWindow(clientBounds, ref m_position))
+            bool collideWithDK = Collide(DK);
+            if (ClampWindow(clientBounds, ref m_position)|| collideWithDK)
             {
                 m_direction.X *= -1;
-                if(GetSpriteEffect()==SpriteEffects.None)
+                if(collideWithDK)
+                {
+                    m_position += m_direction * DK.GetTex().Width;
+                    if(ClampWindow(clientBounds, ref m_position))
+                    {
+                        m_direction.X *= -1;
+                        m_position += m_direction * DK.GetTex().Width*2;
+                        if (GetSpriteEffect() == SpriteEffects.None)
+                        {
+                            SetSpriteEffect(SpriteEffects.FlipHorizontally);
+                        }
+                        else
+                        {
+                            SetSpriteEffect(SpriteEffects.None);
+                        }
+                    }
+                }
+                if (GetSpriteEffect()==SpriteEffects.None)
                 {
                     SetSpriteEffect(SpriteEffects.FlipHorizontally);
                 }
@@ -45,6 +67,18 @@ namespace DonkeyKong
                 }
             }
             m_position += m_direction * m_speed*(float)gameTime.ElapsedGameTime.TotalSeconds;
+            base.Update(gameTime, clientBounds);
+        }
+        public void UpdateDK(GameTime gameTime, Rectangle clientBounds)
+        {
+            m_direction.Y = 0;
+            m_position+= m_direction * m_speed * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            if (ClampWindow(clientBounds, ref m_position))
+            {
+                m_direction.X *= -1;
+
+            }
+            
             base.Update(gameTime, clientBounds);
         }
         public void UpdatePeach(GameTime gameTime, Rectangle clientBounds, Sprite player)
