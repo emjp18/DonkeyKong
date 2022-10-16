@@ -27,11 +27,11 @@ namespace DonkeyKong
             m_marioBackTex = marioBack;
             m_marioFrontTex = textureImage;
         }
-        public void SetPosition(Vector2 pos)
+        public override void SetPosition(Vector2 pos)
         {
-            m_position = pos;
             m_destination = pos;
             m_moving = false;
+            base.SetPosition(pos);
         }
         public override Vector2 direction
         {
@@ -93,14 +93,15 @@ namespace DonkeyKong
             {
                 m_position += (m_dir * m_speed *
             (float)gameTime.ElapsedGameTime.TotalSeconds);
-
+                ClampWindow(clientBounds, ref m_position);
                 if (Vector2.Distance(m_position, m_destination) < 1)
                 {
                     m_position = m_destination;
                     m_moving = false;
                 }
             }
-
+           
+            
             base.Update(gameTime, clientBounds);
         }
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)

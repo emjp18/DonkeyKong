@@ -131,5 +131,10 @@ namespace DonkeyKong
                 m_position.Y = (int)(m_position.Y += (float)gameTime.ElapsedGameTime.TotalSeconds);
             }
         }
+        public virtual void SetPosition(Vector2 pos)
+        {
+            m_position = pos;
+           
+        }
     }
 }

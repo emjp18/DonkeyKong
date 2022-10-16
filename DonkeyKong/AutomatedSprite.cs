@@ -47,5 +47,29 @@ namespace DonkeyKong
             m_position += m_direction * m_speed*(float)gameTime.ElapsedGameTime.TotalSeconds;
             base.Update(gameTime, clientBounds);
         }
+        public void UpdatePeach(GameTime gameTime, Rectangle clientBounds, Sprite player)
+        {
+            
+            m_direction = player.direction;
+            m_direction.Y = 0;
+           
+            if(m_direction.X>0)
+            {
+                SetSpriteEffect(SpriteEffects.FlipHorizontally);
+            }
+            else if(m_direction.X<0)
+            {
+                SetSpriteEffect(SpriteEffects.None);
+            }
+
+
+            m_position += m_direction * m_speed * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            if (ClampWindow(clientBounds, ref m_position))
+            {
+                m_direction.X *= -1;
+
+            }
+            base.Update(gameTime, clientBounds);
+        }
     }
 }

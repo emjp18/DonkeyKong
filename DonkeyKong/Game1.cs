@@ -50,7 +50,6 @@ namespace DonkeyKong
             GraphicsDevice.Clear(Color.Black);
 
             
-
             base.Draw(gameTime);
         }
     }

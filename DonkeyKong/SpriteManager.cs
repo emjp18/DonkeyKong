@@ -21,9 +21,9 @@ namespace DonkeyKong
         public enum TILE_TYPE { BRIDGE, LADDER, WALL};
         public static int g_tilesize;
         public static int g_tilesizeY;
-       private SpriteBatch spriteBatch;
-       private UserControlledSprite player = null;
-       private List<AutomatedSprite> spriteList = new List<AutomatedSprite>();
+       private SpriteBatch m_spriteBatch;
+       private UserControlledSprite m_player = null;
+       private List<AutomatedSprite> m_spriteList = new List<AutomatedSprite>();
        private List<string> m_text;
        private static Tile[,] m_tiles;
        private Texture2D m_wallTex;
@@ -34,28 +34,34 @@ namespace DonkeyKong
         private Texture2D m_menuScreenTex;
         private Texture2D m_gameOverScreenTex;
         private Texture2D m_enemyTex;
-        private const int ENEMYCOUNT = 7;
+        private Texture2D m_winTex;
+        private Texture2D m_peachTex;
+        private const int M_ENEMYCOUNT = 7;
         AutomatedSprite m_menuSprite;
+        AutomatedSprite m_peachSprite;
         public override void Draw(GameTime gameTime)
         {
             switch (Instance.GetCurrentGameState())
             {
                 case GAMESTATE.WIN:
                     {
+                        m_spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
+                        m_menuSprite.DrawStill(m_winTex, m_spriteBatch);
+                        m_spriteBatch.End();
                         break;
                     }
                 case GAMESTATE.LOSE:
                     {
-                        spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
-                        m_menuSprite.DrawStill(m_gameOverScreenTex, spriteBatch);
-                        spriteBatch.End();
+                        m_spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
+                        m_menuSprite.DrawStill(m_gameOverScreenTex, m_spriteBatch);
+                        m_spriteBatch.End();
                         break;
                     }
                 case GAMESTATE.MENU:
                     {
-                        spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
-                        m_menuSprite.DrawStill(m_menuScreenTex, spriteBatch);
-                        spriteBatch.End();
+                        m_spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
+                        m_menuSprite.DrawStill(m_menuScreenTex, m_spriteBatch);
+                        m_spriteBatch.End();
                         break;
                     }
                 case GAMESTATE.NONE:
@@ -64,19 +70,19 @@ namespace DonkeyKong
                     }
                 case GAMESTATE.GAME:
                     {
-                        spriteBatch.Begin();
+                        m_spriteBatch.Begin();
 
                         foreach (Tile tile in m_tiles)
                         {
-                            tile.DrawStill(spriteBatch);
+                            tile.DrawStill(m_spriteBatch);
                         }
 
-                        foreach (Sprite s in spriteList)
-                            s.DrawStill(spriteBatch);
-                        if (player != null)
-                            player.Draw(gameTime, spriteBatch);
+                        foreach (Sprite s in m_spriteList)
+                            s.DrawStill(m_spriteBatch);
 
-                        spriteBatch.End();
+                        m_player.Draw(gameTime, m_spriteBatch);
+                        m_peachSprite.DrawStill(m_spriteBatch);
+                        m_spriteBatch.End();
                         break;
                     }
             }
@@ -87,6 +93,8 @@ namespace DonkeyKong
         }
         protected override void LoadContent()
         {
+            m_peachTex = Game.Content.Load<Texture2D>("pauline");
+            m_winTex = Game.Content.Load<Texture2D>("win");
             m_gameOverScreenTex = Game.Content.Load<Texture2D>("loose");
             m_enemyTex = Game.Content.Load<Texture2D>("enemy");
             m_menuScreenTex = Game.Content.Load<Texture2D>("start");
@@ -97,12 +105,12 @@ namespace DonkeyKong
             m_wallTex = Game.Content.Load<Texture2D>("empty");
             m_floorTex = Game.Content.Load<Texture2D>("bridge");
             m_ladderTex = Game.Content.Load<Texture2D>("ladder");
-            spriteBatch = new SpriteBatch(Game.GraphicsDevice);
+            m_spriteBatch = new SpriteBatch(Game.GraphicsDevice);
             g_tilesize = m_wallTex.Width;
             g_tilesizeY = m_wallTex.Height;
             StreamReader sr = new StreamReader("../../../Content/map.txt");
             m_text = new List<string>();
-           
+            
             while (!sr.EndOfStream)
             {
                 m_text.Add(sr.ReadLine());
@@ -146,18 +154,22 @@ namespace DonkeyKong
                 }
 
             }
-            
-            player = new UserControlledSprite(m_marioFrontTex,m_marioBackTex,
+
+            m_player = new UserControlledSprite(m_marioFrontTex,m_marioBackTex,
                        new Vector2(Game1.G_W-m_marioFrontTex.Width, Game1.G_H-m_marioFrontTex.Height-m_wallTex.Height), 
                        new Point(m_marioFrontTex.Width, m_marioFrontTex.Height), 0, new Point(1, 1), new Point(0, 0), m_playerSpeed, 0);
-
-            for(int i=0; i< ENEMYCOUNT; i++)
+            m_peachSprite = new AutomatedSprite(m_peachTex, new Vector2(Game.Window.ClientBounds.Center.X, m_wallTex.Height*2),
+                new Point(m_peachTex.Width, m_peachTex.Height), 0, new Point(m_peachTex.Width, m_peachTex.Height),
+               new Point(m_peachTex.Width, m_peachTex.Height), 75.0f, 0);
+            for (int i=0; i< M_ENEMYCOUNT; i++)
             {
-                spriteList.Add(new AutomatedSprite(m_enemyTex, new Vector2(m_random.Next(Game1.G_W- m_enemyTex.Width), m_enemyTex.Height * 2*i + m_enemyTex.Height),
+                if (i == 0||i==1)
+                    continue;
+                m_spriteList.Add(new AutomatedSprite(m_enemyTex, new Vector2(m_random.Next(Game1.G_W- m_enemyTex.Width), m_enemyTex.Height * 2*i + m_enemyTex.Height),
                     new Point(m_enemyTex.Width, m_enemyTex.Height), 0, new Point(1, 1), new Point(0, 0)
                     , m_enemySpeed, 0));
-                spriteList[i].SetSpriteEffect(SpriteEffects.FlipHorizontally);
-                spriteList[i].RandomizeSpeed();
+                m_spriteList[i-2].SetSpriteEffect(SpriteEffects.FlipHorizontally);
+                m_spriteList[i-2].RandomizeSpeed();
             }
 
             base.LoadContent();
@@ -186,9 +198,10 @@ namespace DonkeyKong
                     }
                 case GAMESTATE.MENU:
                     {
-                        
-                        player.g_lives = 3;
-                        player.SetPosition(new Vector2(Game1.G_W - m_marioFrontTex.Width, Game1.G_H - m_marioFrontTex.Height - m_wallTex.Height));
+
+                        m_player.g_lives = 3;
+                        m_peachSprite.SetPosition(new Vector2(Game.Window.ClientBounds.Center.X, m_wallTex.Height * 2));
+                        m_player.SetPosition(new Vector2(Game1.G_W - m_marioFrontTex.Width, Game1.G_H - m_marioFrontTex.Height - m_wallTex.Height));
                         if(Keyboard.GetState().IsKeyUp(Keys.Enter))
                         {
                             m_canStart = true;
@@ -205,26 +218,30 @@ namespace DonkeyKong
                     }
                 case GAMESTATE.GAME:
                     {
-                        if (player != null)
-                            player.Update(gameTime, Game.Window.ClientBounds);
-                        foreach (AutomatedSprite s in spriteList)
+
+                        m_player.Update(gameTime, Game.Window.ClientBounds);
+                        m_peachSprite.UpdatePeach(gameTime, Game.Window.ClientBounds, m_player);
+                        foreach (AutomatedSprite s in m_spriteList)
                         {
                             s.UpdateEnemyFire(gameTime, Game.Window.ClientBounds);
-                            if (player.Collide(s))
+                            if (m_player.Collide(s))
                             {
-                                if(player.KnockBack(s.direction, Game.Window.ClientBounds))
+                                if(m_player.KnockBack(s.direction, Game.Window.ClientBounds))
                                 {
-                                    player.g_lives--;
+                                    m_player.g_lives--;
                                 }
                                 
                             }
                         }
                             
-                        if(player.g_lives <= 0)
+                        if(m_player.g_lives <= 0)
                         {
                             Instance.SetCurrentGameState(GAMESTATE.LOSE);
                         }
-                        
+                        if(m_player.Collide(m_peachSprite))
+                        {
+                            Instance.SetCurrentGameState(GAMESTATE.WIN);
+                        }
                         break;
                     }
             }
