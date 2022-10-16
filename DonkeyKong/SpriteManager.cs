@@ -13,12 +13,12 @@ namespace DonkeyKong
 {
     internal class SpriteManager : Microsoft.Xna.Framework.DrawableGameComponent
     {
-        private bool collision = false;
+        
         private Random m_random = new Random();
         private float m_playerSpeed = 100;
         private float m_enemySpeed = 50;
-        private int m_lives = 3;
-       public enum TILE_TYPE { BRIDGE, LADDER, WALL};
+        private bool m_canStart = false;
+        public enum TILE_TYPE { BRIDGE, LADDER, WALL};
         public static int g_tilesize;
         public static int g_tilesizeY;
        private SpriteBatch spriteBatch;
@@ -32,6 +32,7 @@ namespace DonkeyKong
        private Texture2D m_marioFrontTex;
         private Texture2D m_marioBackTex;
         private Texture2D m_menuScreenTex;
+        private Texture2D m_gameOverScreenTex;
         private Texture2D m_enemyTex;
         private const int ENEMYCOUNT = 7;
         AutomatedSprite m_menuSprite;
@@ -45,13 +46,15 @@ namespace DonkeyKong
                     }
                 case GAMESTATE.LOSE:
                     {
-                        
+                        spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
+                        m_menuSprite.DrawStill(m_gameOverScreenTex, spriteBatch);
+                        spriteBatch.End();
                         break;
                     }
                 case GAMESTATE.MENU:
                     {
                         spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
-                        m_menuSprite.DrawStill(gameTime, spriteBatch);
+                        m_menuSprite.DrawStill(m_menuScreenTex, spriteBatch);
                         spriteBatch.End();
                         break;
                     }
@@ -65,11 +68,11 @@ namespace DonkeyKong
 
                         foreach (Tile tile in m_tiles)
                         {
-                            tile.DrawStill(gameTime, spriteBatch);
+                            tile.DrawStill(spriteBatch);
                         }
 
                         foreach (Sprite s in spriteList)
-                            s.DrawStill(gameTime, spriteBatch);
+                            s.DrawStill(spriteBatch);
                         if (player != null)
                             player.Draw(gameTime, spriteBatch);
 
@@ -84,6 +87,7 @@ namespace DonkeyKong
         }
         protected override void LoadContent()
         {
+            m_gameOverScreenTex = Game.Content.Load<Texture2D>("loose");
             m_enemyTex = Game.Content.Load<Texture2D>("enemy");
             m_menuScreenTex = Game.Content.Load<Texture2D>("start");
             m_menuSprite = new AutomatedSprite(m_menuScreenTex, new Vector2(0, 0), new Point(m_menuScreenTex.Width, m_menuScreenTex.Height)
@@ -152,6 +156,8 @@ namespace DonkeyKong
                 spriteList.Add(new AutomatedSprite(m_enemyTex, new Vector2(m_random.Next(Game1.G_W- m_enemyTex.Width), m_enemyTex.Height * 2*i + m_enemyTex.Height),
                     new Point(m_enemyTex.Width, m_enemyTex.Height), 0, new Point(1, 1), new Point(0, 0)
                     , m_enemySpeed, 0));
+                spriteList[i].SetSpriteEffect(SpriteEffects.FlipHorizontally);
+                spriteList[i].RandomizeSpeed();
             }
 
             base.LoadContent();
@@ -162,10 +168,16 @@ namespace DonkeyKong
             {
                 case GAMESTATE.WIN:
                     {
+                        m_canStart = false;
+                        if (Keyboard.GetState().IsKeyDown(Keys.Enter))
+                        {
+                            Instance.SetCurrentGameState(GAMESTATE.MENU);
+                        }
                         break;
                     }
                 case GAMESTATE.LOSE:
                     {
+                        m_canStart = false;
                         if (Keyboard.GetState().IsKeyDown(Keys.Enter))
                         {
                             Instance.SetCurrentGameState(GAMESTATE.MENU);
@@ -174,9 +186,14 @@ namespace DonkeyKong
                     }
                 case GAMESTATE.MENU:
                     {
-                        m_lives = 3;
+                        
+                        player.g_lives = 3;
                         player.SetPosition(new Vector2(Game1.G_W - m_marioFrontTex.Width, Game1.G_H - m_marioFrontTex.Height - m_wallTex.Height));
-                        if (Keyboard.GetState().IsKeyDown(Keys.Enter))
+                        if(Keyboard.GetState().IsKeyUp(Keys.Enter))
+                        {
+                            m_canStart = true;
+                        }
+                        if (Keyboard.GetState().IsKeyDown(Keys.Enter)&& m_canStart)
                         {
                             Instance.SetCurrentGameState(GAMESTATE.GAME);
                         }
@@ -195,12 +212,15 @@ namespace DonkeyKong
                             s.UpdateEnemyFire(gameTime, Game.Window.ClientBounds);
                             if (player.Collide(s))
                             {
-                                player.KnockBack();
+                                if(player.KnockBack(s.direction, Game.Window.ClientBounds))
+                                {
+                                    player.g_lives--;
+                                }
                                 
                             }
                         }
                             
-                        if(m_lives<=0)
+                        if(player.g_lives <= 0)
                         {
                             Instance.SetCurrentGameState(GAMESTATE.LOSE);
                         }

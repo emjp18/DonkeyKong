@@ -16,7 +16,7 @@ namespace DonkeyKong
         private Vector2 m_dir;
         private Texture2D m_marioBackTex;
         private Texture2D m_marioFrontTex;
-
+        public int g_lives = 3;
 
         public UserControlledSprite(Texture2D textureImage, Texture2D marioBack, Vector2 position,
                 Point frameSize, int collisionOffset, Point currentFrame, Point sheetSize,
@@ -67,19 +67,22 @@ namespace DonkeyKong
                 return inputDirection;
             }
         }
-        public void KnockBack(Vector2 direction)
+        public bool KnockBack(Vector2 direction, Rectangle clientBounds)
         {
-            m_position.X = (int)m_position.X;
-            m_position.Y = (int)m_position.Y;
             Vector2 newDestination = m_position + direction * SpriteManager.g_tilesizeY;
-            m_destination = newDestination;
-            m_moving = true;
-            m_dir = direction;
+            if(!ClampWindow(clientBounds, ref newDestination)&& !m_climbingLadder)
+            {
+                m_destination = newDestination;
+                m_moving = true;
+                m_dir = direction;
+                return true;
+            }
+            return false;
 
         }
         public override void Update(GameTime gameTime, Rectangle clientBounds)
         {
-            
+
             
             if (!m_moving)
             {
@@ -114,33 +117,67 @@ namespace DonkeyKong
         }
         public void ChangeDirection(Vector2 dir, Rectangle clientBounds)
         {
-            
-            Vector2 newDestination = m_position + dir * SpriteManager.g_tilesize;
 
-            ClampWindow(clientBounds, ref newDestination);
-            
-            SpriteManager.TILE_TYPE type = SpriteManager.GetTileTypeAtPosition(newDestination);
-            if (type == SpriteManager.TILE_TYPE.LADDER)
+
+
+
+            if (m_climbingLadder)
             {
-                if((dir.Y<0 && dir.X == 0)||(dir.X<0&&dir.Y==0) || (dir.X > 0 && dir.Y == 0)|| (dir.Y > 0 && dir.X == 0))
+                Vector2 newDestinationY = m_position + dir * SpriteManager.g_tilesizeY;
+                ClampWindow(clientBounds, ref newDestinationY);
+                SpriteManager.TILE_TYPE typeY = SpriteManager.GetTileTypeAtPosition(newDestinationY);
+
+                if (typeY == SpriteManager.TILE_TYPE.LADDER)
                 {
-                    m_destination = newDestination;
-                    m_moving = true;
-                    m_climbingLadder = true;
+                    if ((dir.X != 0 && dir.Y == 0) || (dir.Y != 0 && dir.X == 0))
+                    {
+                        m_destination = newDestinationY;
+                        m_moving = true;
+                        m_climbingLadder = true;
+                    }
+
                 }
-               
-            }
-            else if(type==SpriteManager.TILE_TYPE.WALL)
-            {
-                if (dir.Y==0||m_climbingLadder)
+                else if (typeY == SpriteManager.TILE_TYPE.WALL)
                 {
-                    m_destination = newDestination;
-                    m_moving = true;
-                    m_climbingLadder = false;
+                    if (dir.Y == 0)
+                    {
+                        m_destination = newDestinationY;
+                        m_moving = true;
+                        m_climbingLadder = false;
+                    }
+
+
+
                 }
                 
+
             }
-           
+            else
+            {
+                Vector2 newDestination = m_position + dir * SpriteManager.g_tilesize;
+                ClampWindow(clientBounds, ref newDestination);
+                SpriteManager.TILE_TYPE type = SpriteManager.GetTileTypeAtPosition(newDestination);
+                if (type == SpriteManager.TILE_TYPE.LADDER)
+                {
+                    if ((dir.X != 0 && dir.Y == 0) || (dir.Y != 0 && dir.X == 0))
+                    {
+                        m_destination = newDestination;
+                        m_moving = true;
+                        m_climbingLadder = true;
+                    }
+
+                }
+                else if (type == SpriteManager.TILE_TYPE.WALL)
+                {
+                    if (dir.Y == 0)
+                    {
+                        m_destination = newDestination;
+                        m_moving = true;
+                        m_climbingLadder = false;
+                    }
+
+                }
+            }
         }
     }
 }

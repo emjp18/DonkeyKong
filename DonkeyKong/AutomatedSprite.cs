@@ -22,7 +22,7 @@ namespace DonkeyKong
         {
             get { return m_direction; }
         }
-
+        public void RandomizeSpeed(int min=10, int max = 90) { Random random = new Random(); m_speed = (float)random.Next(min, max); }
         public override void Update(GameTime gameTime, Rectangle clientBounds)
         {
            
@@ -35,6 +35,14 @@ namespace DonkeyKong
             if (ClampWindow(clientBounds, ref m_position))
             {
                 m_direction.X *= -1;
+                if(GetSpriteEffect()==SpriteEffects.None)
+                {
+                    SetSpriteEffect(SpriteEffects.FlipHorizontally);
+                }
+                else
+                {
+                    SetSpriteEffect(SpriteEffects.None);
+                }
             }
             m_position += m_direction * m_speed*(float)gameTime.ElapsedGameTime.TotalSeconds;
             base.Update(gameTime, clientBounds);

@@ -19,7 +19,12 @@ namespace DonkeyKong
         protected int m_millisecondsPerFrame;
         protected float m_speed;
         protected int m_collisionOffset = 0;
-       
+        protected SpriteEffects m_effect = SpriteEffects.None;
+        public void SetSpriteEffect(SpriteEffects effect)
+        {
+            m_effect = effect;
+        }
+        public SpriteEffects GetSpriteEffect() { return m_effect; }
         public Sprite(Texture2D textureImage, Vector2 position, Point frameSize,
             int collisionOffset, Point currentFrame, Point sheetSize, float speed,
                     int millisecondsPerFrame)
@@ -97,25 +102,33 @@ namespace DonkeyKong
             m_currentFrame.Y * m_frameSize.Y,
             m_frameSize.X, m_frameSize.Y),
             Color.White, 0, Vector2.Zero,
-            1f, SpriteEffects.None, 0);
+            1f, m_effect, 0);
         }
-        public void DrawStill(GameTime gameTime, SpriteBatch spriteBatch)
+        public void DrawStill(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(m_textureImage, m_position, Color.White);
+            spriteBatch.Draw(m_textureImage, m_position, m_textureImage.Bounds,
+                Color.White, 0, Vector2.Zero,
+            1f, m_effect, 0);
         }
+        public void DrawStill(Texture2D texture, SpriteBatch spriteBatch)
+        {
+            spriteBatch.Draw(texture,
+            m_position, texture.Bounds,
+            Color.White, 0, Vector2.Zero,
+            1f, m_effect, 0);
+        }
+        
         public abstract Vector2 direction
         {
             get;
         }
-        public void Gravity(ref Vector2 position, GameTime gameTime)
+        public void Gravity(ref Vector2 position,ref bool isGrounded, GameTime gameTime)
         {
-            SpriteManager.TILE_TYPE type = SpriteManager.GetTileTypeAtPosition(position);
-            if (type!= SpriteManager.TILE_TYPE.LADDER)
+            isGrounded = position.Y + m_frameSize.Y % SpriteManager.g_tilesizeY == 0;
+
+            if(!isGrounded)
             {
-                if(!Collide(SpriteManager.GetTileAtPosition(position))&&type == SpriteManager.TILE_TYPE.BRIDGE)
-                {
-                    position.Y -= m_speed * gameTime.ElapsedGameTime.Seconds;
-                }
+                m_position.Y = (int)(m_position.Y += (float)gameTime.ElapsedGameTime.TotalSeconds);
             }
         }
     }
