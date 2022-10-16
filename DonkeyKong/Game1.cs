@@ -7,7 +7,8 @@ namespace DonkeyKong
     public class Game1 : Game
     {
         private GraphicsDeviceManager _graphics;
-        
+        public const int G_W = 800;
+        public const int G_H = 600;
         private SpriteManager m_spriteManager;
         public Game1()
         {
@@ -27,7 +28,9 @@ namespace DonkeyKong
         protected override void LoadContent()
         {
 
-            
+            _graphics.PreferredBackBufferWidth = G_W;
+            _graphics.PreferredBackBufferHeight = G_H;
+            _graphics.ApplyChanges();
             // TODO: use this.Content to load your game content here
         }
 

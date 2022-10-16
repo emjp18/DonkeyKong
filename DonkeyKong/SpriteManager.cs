@@ -11,7 +11,7 @@ namespace DonkeyKong
 {
     internal class SpriteManager : Microsoft.Xna.Framework.DrawableGameComponent
     {
-       
+       public enum TILE_TYPE { BRIDGE, LADDER, WALL};
        public static int g_tilesize = 50;
        private SpriteBatch spriteBatch;
        private UserControlledSprite player = null;
@@ -47,11 +47,10 @@ namespace DonkeyKong
             m_floorTex = Game.Content.Load<Texture2D>("bridge");
             m_ladderTex = Game.Content.Load<Texture2D>("ladder");
             spriteBatch = new SpriteBatch(Game.GraphicsDevice);
+            g_tilesize = m_wallTex.Width;
             StreamReader sr = new StreamReader("../../../Content/map.txt");
             m_text = new List<string>();
-            player = new UserControlledSprite(m_marioFrontTex, new
-                        Vector2(400, 300
-                        ), new Point(m_marioFrontTex.Width, m_marioFrontTex.Height), 0, new Point(1, 1), new Point(0, 0), new Vector2(0, 0), 0);
+           
             while (!sr.EndOfStream)
             {
                 m_text.Add(sr.ReadLine());
@@ -70,7 +69,7 @@ namespace DonkeyKong
 
                         m_tiles[i, j] = new Tile(m_wallTex, new
                         Vector2(m_wallTex.Width * i, m_wallTex.Height
-                        * j), new Point(m_wallTex.Width, m_wallTex.Height), 0, new Point(0, 0), new Point(0, 0), new Vector2(0, 0), 0, false);
+                        * j), new Point(m_wallTex.Width, m_wallTex.Height), 0, new Point(0, 0), new Point(0, 0), 0, 0, TILE_TYPE.WALL);
 
                     }
 
@@ -79,7 +78,7 @@ namespace DonkeyKong
 
                         m_tiles[i, j] = new Tile(m_floorTex, new
                         Vector2(m_floorTex.Width * i, m_floorTex.Height
-                        * j), new Point(m_floorTex.Width, m_floorTex.Height), 0, new Point(0, 0), new Point(0, 0), new Vector2(0, 0), 0, false);
+                        * j), new Point(m_floorTex.Width, m_floorTex.Height), 0, new Point(0, 0), new Point(0, 0), 0, 0, TILE_TYPE.BRIDGE);
 
                     }
 
@@ -88,13 +87,17 @@ namespace DonkeyKong
 
                         m_tiles[i, j] = new Tile(m_ladderTex, new
                         Vector2(m_ladderTex.Width * i, m_ladderTex.Height
-                        * j), new Point(m_ladderTex.Width, m_ladderTex.Height), 0, new Point(0, 0), new Point(0, 0), new Vector2(0, 0), 0, true);
+                        * j), new Point(m_ladderTex.Width, m_ladderTex.Height), 0, new Point(0, 0), new Point(0, 0), 0.0f, 0, TILE_TYPE.LADDER);
 
                     }
 
                 }
 
             }
+            
+            player = new UserControlledSprite(m_marioFrontTex,
+                       new Vector2(Game1.G_W-m_marioFrontTex.Width, Game1.G_H-m_marioFrontTex.Height), 
+                       new Point(m_marioFrontTex.Width, m_marioFrontTex.Height), 0, new Point(1, 1), new Point(0, 0), 50.0f, 0);
             base.LoadContent();
         }
         public override void Update(GameTime gameTime)
@@ -113,10 +116,15 @@ namespace DonkeyKong
         {
             
         }
-        public static bool GetTileLadderAtPosition(Vector2 vec)
+        public static TILE_TYPE GetTileLadderAtPosition(Vector2 vec)
         {
-            return m_tiles[(int)vec.X / g_tilesize, (int)vec.Y / g_tilesize].g_ladder;
+            
+            return m_tiles[(int)vec.X / g_tilesize, (int)vec.Y / g_tilesize].g_type;
         }
-        
+        public static Tile GetTileAtPosition(Vector2 vec)
+        {
+            return m_tiles[(int)vec.X / g_tilesize, (int)vec.Y / g_tilesize];
+
+        }
     }
 }

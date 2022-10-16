@@ -17,11 +17,11 @@ namespace DonkeyKong
         protected Point m_sheetSize;
         protected int m_timeSinceLastFrame;
         protected int m_millisecondsPerFrame;
-        protected Vector2 m_speed;
+        protected float m_speed;
         protected int m_collisionOffset = 0;
        
         public Sprite(Texture2D textureImage, Vector2 position, Point frameSize,
-            int collisionOffset, Point currentFrame, Point sheetSize, Vector2 speed,
+            int collisionOffset, Point currentFrame, Point sheetSize, float speed,
                     int millisecondsPerFrame)
         {
             m_textureImage = textureImage;
@@ -77,6 +77,17 @@ namespace DonkeyKong
         public abstract Vector2 direction
         {
             get;
+        }
+        public void Gravity(ref Vector2 position, GameTime gameTime)
+        {
+            SpriteManager.TILE_TYPE type = SpriteManager.GetTileLadderAtPosition(position);
+            if (type!= SpriteManager.TILE_TYPE.LADDER)
+            {
+                if(!Collide(SpriteManager.GetTileAtPosition(position))&&type == SpriteManager.TILE_TYPE.BRIDGE)
+                {
+                    position.Y -= m_speed * gameTime.ElapsedGameTime.Seconds;
+                }
+            }
         }
     }
 }

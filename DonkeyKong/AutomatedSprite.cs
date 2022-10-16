@@ -11,7 +11,7 @@ namespace DonkeyKong
     {
       
         public AutomatedSprite(Texture2D textureImage, Vector2 position, Point frameSize,
-            int collisionOffset, Point currentFrame, Point sheetSize, Vector2 speed,
+            int collisionOffset, Point currentFrame, Point sheetSize, float speed,
             int millisecondsPerFrame)
             : base(textureImage, position, frameSize, collisionOffset, currentFrame,
             sheetSize, speed, millisecondsPerFrame)
@@ -19,7 +19,7 @@ namespace DonkeyKong
         }
         public override Vector2 direction
         {
-            get { return m_speed; }
+            get { return new Vector2(m_speed,m_speed); }
         }
 
         public override void Update(GameTime gameTime, Rectangle clientBounds)
