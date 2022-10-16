@@ -42,11 +42,11 @@ namespace DonkeyKong
                 m_direction.X *= -1;
                 if(collideWithDK)
                 {
-                    m_position += m_direction * DK.GetTex().Width;
+                    m_position += m_direction * DK.GetTex().Width*0.5f;
                     if(ClampWindow(clientBounds, ref m_position))
                     {
                         m_direction.X *= -1;
-                        m_position += m_direction * DK.GetTex().Width*2;
+                        m_position += m_direction * DK.GetTex().Width*1.5f;
                         if (GetSpriteEffect() == SpriteEffects.None)
                         {
                             SetSpriteEffect(SpriteEffects.FlipHorizontally);
