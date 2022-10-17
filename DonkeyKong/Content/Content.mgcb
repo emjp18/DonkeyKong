@@ -85,6 +85,13 @@
 /processorParam:TextureFormat=Color
 /build:enemy.png
 
+#begin File.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:File.spritefont
+
 #begin heart.png
 /importer:TextureImporter
 /processor:TextureProcessor

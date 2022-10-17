@@ -59,6 +59,8 @@ namespace DonkeyKong
         private  int m_score = 0;
         private bool m_doOnce = false;
         private bool m_doOnceMenu = false;
+        private SpriteFont m_font;
+        string m_scoreString= "";
         public override void Draw(GameTime gameTime)
         {
             switch (Instance.GetCurrentGameState())
@@ -67,13 +69,17 @@ namespace DonkeyKong
                     {
                         m_spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
                         m_menuSprite.DrawStill(m_winTex, m_spriteBatch);
+                        m_spriteBatch.DrawString(m_font, "HIGHSCORE\n"+m_scoreString, new Vector2(0, 0), Color.White);
                         m_spriteBatch.End();
                         break;
                     }
                 case GAMESTATE.LOSE:
                     {
+                        
+                        
                         m_spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
                         m_menuSprite.DrawStill(m_gameOverScreenTex, m_spriteBatch);
+                        m_spriteBatch.DrawString(m_font, "HIGHSCORE\n" + m_scoreString, new Vector2(0, 0), Color.White);
                         m_spriteBatch.End();
                         break;
                     }
@@ -217,6 +223,7 @@ namespace DonkeyKong
         }
         protected override void LoadContent()
         {
+            m_font = Game.Content.Load<SpriteFont>("File");
             m_paulineAvaTex = Game.Content.Load<Texture2D>("paulineAva");
             m_scoreTex = Game.Content.Load<Texture2D>("cheese");
             m_heartTex = Game.Content.Load<Texture2D>("heart");
@@ -337,7 +344,8 @@ namespace DonkeyKong
                         if (!m_doOnce)
                         {
                             StreamReader sr = new StreamReader("../../../Content/score.txt");
-                            string scoreString = sr.ReadToEnd();
+                            m_scoreString = sr.ReadToEnd();
+                            
                             sr.Close();
                             StreamWriter sw = new StreamWriter("../../../Content/score.txt");
                             string name = "Mario";
@@ -345,13 +353,13 @@ namespace DonkeyKong
                             {
                                 name = "Pauline";
                             }
-                            if (scoreString.Length == 0)
+                            if (m_scoreString.Length == 0)
                             {
                                 sw.Write(name + " " + m_score);
                             }
                             else
                             {
-                                sw.Write(scoreString + "\n" + name + " " + m_score);
+                                sw.Write(m_scoreString + "\n" + name + " " + m_score);
                             }
                             sw.Close();
                             m_doOnce = true;
@@ -370,7 +378,7 @@ namespace DonkeyKong
                         if (!m_doOnce)
                         {
                             StreamReader sr = new StreamReader("../../../Content/score.txt");
-                            string scoreString = sr.ReadToEnd();
+                            m_scoreString = sr.ReadToEnd();
                             sr.Close();
                             StreamWriter sw = new StreamWriter("../../../Content/score.txt");
                             string name = "Mario";
@@ -378,13 +386,13 @@ namespace DonkeyKong
                             {
                                 name = "Pauline";
                             }
-                            if(scoreString.Length==0)
+                            if(m_scoreString.Length==0)
                             {
                                 sw.Write(name + " " + m_score);
                             }
                             else
                             {
-                                sw.Write(scoreString + "\n" + name+" "+ m_score);
+                                sw.Write(m_scoreString + "\n" + name+" "+ m_score);
                             }
                             
                             sw.Close();
