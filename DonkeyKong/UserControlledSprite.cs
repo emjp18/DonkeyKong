@@ -11,6 +11,8 @@ namespace DonkeyKong
 {
     internal class UserControlledSprite : Sprite
     {
+        public enum LEVELHEIGHT{ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN};
+        public LEVELHEIGHT g_levelReached = LEVELHEIGHT.ONE;
         private bool m_climbingLadder = false;
         private Vector2 m_destination;
         private bool m_moving = false;
@@ -19,6 +21,7 @@ namespace DonkeyKong
         private Texture2D m_marioFrontTex;
         public int g_lives = 5;
         private bool m_knocked = false;
+        private SpriteManager.AVATAR m_ava;
         public UserControlledSprite(Texture2D textureImage, Texture2D marioBack, Vector2 position,
                 Point frameSize, int collisionOffset, Point currentFrame, Point sheetSize,
                 float speed, int millisecondsPerFrame)
@@ -73,6 +76,8 @@ namespace DonkeyKong
         {
             Math.Clamp(direction.X, 0,1);
             Math.Clamp(direction.Y, 0, 1);
+            m_position.X = (int)m_position.X;
+            m_position.Y = (int)m_position.Y;
             Vector2 newDestination = m_position + direction * SpriteManager.g_tilesizeY;
             if(!ClampWindow(clientBounds, ref newDestination)&& !m_climbingLadder)
             {
@@ -88,7 +93,36 @@ namespace DonkeyKong
         }
         public override void Update(GameTime gameTime, Rectangle clientBounds)
         {
+            if(m_position.Y > SpriteManager.g_tilesizeY * 2)
+            {
+                g_levelReached = LEVELHEIGHT.SEVEN;
+                if (m_position.Y > SpriteManager.g_tilesizeY * 4)
+                {
+                    g_levelReached = LEVELHEIGHT.SIX;
+                    if (m_position.Y > SpriteManager.g_tilesizeY * 4 + SpriteManager.g_tilesizeY * 2)
+                    {
+                        g_levelReached = LEVELHEIGHT.FIVE;
+                        if (m_position.Y > SpriteManager.g_tilesizeY * 4 + SpriteManager.g_tilesizeY * 4)
+                        {
+                            g_levelReached = LEVELHEIGHT.FOUR;
+                            if (m_position.Y > SpriteManager.g_tilesizeY * 4 + SpriteManager.g_tilesizeY * 6)
+                            {
+                                g_levelReached = LEVELHEIGHT.THREE;
+                                if (m_position.Y > SpriteManager.g_tilesizeY * 4 + SpriteManager.g_tilesizeY * 8)
+                                {
+                                    g_levelReached = LEVELHEIGHT.TWO;
+                                    if (m_position.Y > SpriteManager.g_tilesizeY * 4 + SpriteManager.g_tilesizeY * 10)
+                                    {
+                                        g_levelReached = LEVELHEIGHT.ONE;
 
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
             
             if (!m_moving&&!m_knocked)
             {
@@ -115,15 +149,23 @@ namespace DonkeyKong
         }
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
-            if(m_climbingLadder)
+            if (m_ava == SpriteManager.AVATAR.MARIO)
             {
-                m_textureImage = m_marioBackTex;
+                if (m_climbingLadder)
+                {
+                    m_textureImage = m_marioBackTex;
+                }
+                else
+                {
+                    m_textureImage = m_marioFrontTex;
+                }
             }
-            else
-            {
-                m_textureImage = m_marioFrontTex;
-            }
+            
             base.Draw(gameTime, spriteBatch);
+        }
+        public void SetAva(SpriteManager.AVATAR ava)
+        {
+            m_ava = ava;
         }
         public void ChangeDirection(Vector2 dir, Rectangle clientBounds)
         {

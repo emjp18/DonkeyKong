@@ -29,9 +29,19 @@ namespace DonkeyKong
         public void RandomizeSpeed(int min=30, int max = 90) { Random random = new Random(); m_speed = (float)random.Next(min, max); }
         public override void Update(GameTime gameTime, Rectangle clientBounds)
         {
-           
-            m_position += direction;
-            base.Update(gameTime, clientBounds);
+
+            m_timeSinceLastFrame += gameTime.ElapsedGameTime.Milliseconds;
+            if (m_timeSinceLastFrame > m_millisecondsPerFrame)
+            {
+                m_timeSinceLastFrame = 0;
+                ++m_currentFrame.X;
+                if (m_currentFrame.X >= m_sheetSize.X)
+                {
+                    m_currentFrame.X = 0;
+                    
+                }
+            }
+            
         }
         public void UpdateEnemyFire(GameTime gameTime, Rectangle clientBounds, Sprite DK)
         {
@@ -42,11 +52,11 @@ namespace DonkeyKong
                 m_direction.X *= -1;
                 if(collideWithDK)
                 {
-                    m_position += m_direction * DK.GetTex().Width*0.5f;
-                    if(ClampWindow(clientBounds, ref m_position))
+                    m_position += m_direction * DK.GetTex().Width*0.25f;
+                    if(ClampWindow(clientBounds, ref m_position)||m_direction.Equals(DK.direction))
                     {
                         m_direction.X *= -1;
-                        m_position += m_direction * DK.GetTex().Width*1.5f;
+                        m_position += m_direction * DK.GetTex().Width*1.25f;
                         if (GetSpriteEffect() == SpriteEffects.None)
                         {
                             SetSpriteEffect(SpriteEffects.FlipHorizontally);

@@ -138,5 +138,6 @@ namespace DonkeyKong
         }
         public Texture2D GetTex() { return m_textureImage; }
         public Vector2 GetPos() { return m_position; }
+        public void SetTex(Texture2D tex) { m_textureImage = tex; } 
     }
 }
