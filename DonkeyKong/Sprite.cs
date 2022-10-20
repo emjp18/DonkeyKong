@@ -10,6 +10,11 @@ namespace DonkeyKong
 {
     internal abstract class Sprite
     {
+        protected Vector2 m_velocity = Vector2.Zero;
+        protected float m_r;
+        protected float m_mass = 1.0f;
+        public bool g_draw = true;
+        public bool g_update = true;
         protected Texture2D m_textureImage;
         protected Vector2 m_position;
         protected Point m_frameSize;
@@ -37,11 +42,44 @@ namespace DonkeyKong
             m_sheetSize = sheetSize;
             m_speed = speed;
             m_millisecondsPerFrame = millisecondsPerFrame;
+            float a = (MathF.PI * (float)m_textureImage.Width * (float)m_textureImage.Height) / 4.0f;
+            m_r = MathF.Sqrt(a / MathF.PI);
 
+        }
+        public void SetVelocity(Vector2 vel)
+        {
+            m_velocity = vel;
         }
         public bool Collide(Sprite other)
         {
             return GetBounds().Intersects(other.GetBounds());
+        }
+        public void PhysicsCollide(Sprite other)
+        {
+            Vector2 direction = m_position - other.m_position;
+            float d = MathF.Sqrt(MathF.Pow(direction.X, 2) + MathF.Pow(direction.Y, 2)); //get direction between asteroid length.
+
+            if ((m_r + other.m_r) >= d) //if the two r are smaller than the distance between them, they collide.
+            {
+                Vector2 dirV = direction - other.direction;
+                if (Vector2.Dot(dirV, direction) > 0)
+                {
+                    return;
+                }
+                else
+                {
+                    int e = 1;
+                    Vector2 WA = m_mass * direction + other.m_mass * other.direction + e * other.m_mass * (other.direction - direction) / (m_mass + other.m_mass);
+                    Vector2 WB = m_mass * direction + other.m_mass * other.direction + e * m_mass * (direction - other.direction) / (m_mass + other.m_mass);
+                    SetVelocity(WA);
+                    other.SetVelocity(WB);
+                    return;
+                }
+            }
+            else
+            {
+                return;
+            }
         }
         Rectangle GetBounds() { return new Rectangle(
                     (int)m_position.X + m_collisionOffset,
@@ -106,6 +144,7 @@ namespace DonkeyKong
         }
         public void DrawStill(SpriteBatch spriteBatch)
         {
+         
             spriteBatch.Draw(m_textureImage, m_position, m_textureImage.Bounds,
                 Color.White, 0, Vector2.Zero,
             1f, m_effect, 0);

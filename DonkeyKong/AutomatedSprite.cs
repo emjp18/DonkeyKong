@@ -9,6 +9,7 @@ namespace DonkeyKong
 {
     internal class AutomatedSprite : Sprite
     {
+        
         Vector2 m_direction;
         public AutomatedSprite(Texture2D textureImage, Vector2 position, Point frameSize,
             int collisionOffset, Point currentFrame, Point sheetSize, float speed,
@@ -43,14 +44,31 @@ namespace DonkeyKong
             }
             
         }
+        public void SetMass(float mass)
+        {
+            m_mass = mass;
+        }
+        public void UpdateTile(GameTime gameTime, Rectangle clientBounds)
+        {
+            if(m_velocity!=Vector2.Zero)
+            {
+                m_velocity *= (float)gameTime.ElapsedGameTime.TotalSeconds * m_speed;
+                m_position += m_velocity;
+            }
+            if(m_position.Y>clientBounds.Y)
+            {
+                g_update = false;
+                g_draw = false;
+            }
+        }
         public void UpdateEnemyFire(GameTime gameTime, Rectangle clientBounds, Sprite DK)
         {
             m_direction.Y = 0;
-            bool collideWithDK = Collide(DK);
-            if (ClampWindow(clientBounds, ref m_position)|| collideWithDK)
+            bool collide = Collide(DK);
+            if (ClampWindow(clientBounds, ref m_position)|| collide)
             {
                 m_direction.X *= -1;
-                if(collideWithDK)
+                if(collide)
                 {
                     m_position += m_direction * DK.GetTex().Width*0.25f;
                     if(ClampWindow(clientBounds, ref m_position)||m_direction.Equals(DK.direction))
@@ -82,7 +100,21 @@ namespace DonkeyKong
         public void UpdateDK(GameTime gameTime, Rectangle clientBounds)
         {
             m_direction.Y = 0;
-            m_position+= m_direction * m_speed * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            
+            if (m_velocity != Vector2.Zero)
+            {
+                m_velocity *= (float)gameTime.ElapsedGameTime.TotalSeconds * m_speed;
+                m_position += m_velocity;
+            }
+            else
+            {
+                m_position += m_direction * m_speed * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            }
+            if (m_position.Y > clientBounds.Y)
+            {
+                g_update = false;
+                g_draw = false;
+            }
             if (ClampWindow(clientBounds, ref m_position))
             {
                 m_direction.X *= -1;

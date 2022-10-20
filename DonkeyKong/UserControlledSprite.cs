@@ -47,13 +47,13 @@ namespace DonkeyKong
                 if (Keyboard.GetState().IsKeyDown(Keys.Left))
                 {
                     inputDirection.X = -1;
-
+                    m_effect = SpriteEffects.None;
                 }
 
                 if (Keyboard.GetState().IsKeyDown(Keys.Right))
                 {
                     inputDirection.X = 1;
-
+                    m_effect = SpriteEffects.FlipHorizontally;
                 }
 
                 if (Keyboard.GetState().IsKeyDown(Keys.Up))
@@ -226,6 +226,18 @@ namespace DonkeyKong
                         m_destination = newDestination;
                         m_moving = true;
                         m_climbingLadder = false;
+                    }
+
+                }
+                else if (type == SpriteManager.TILE_TYPE.SPRINT)
+                {
+                    if (dir.Y == 0)
+                    {
+                        m_destination = newDestination;
+                        m_moving = true;
+                        m_climbingLadder = false;
+                        Tile tile = SpriteManager.GetTileAtPosition(newDestination);
+                        tile.g_update = true;
                     }
 
                 }

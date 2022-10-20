@@ -13,6 +13,11 @@ namespace DonkeyKong
 {
     internal class SpriteManager : Microsoft.Xna.Framework.DrawableGameComponent
     {
+
+        int m_sprintsLoose = 0;
+        private bool m_DKFALL = false;
+        public enum HAMMER_STATE { DOWN = 1 << 2, UP = 1 << 1,PICKED_UP = 1<<0, DEFAULT = 0}
+        private HAMMER_STATE m_hammerState = HAMMER_STATE.DEFAULT;
         public enum AVATAR { MARIO, PAULINE};
         private AVATAR ava = AVATAR.MARIO;
         private const int M_ANISHEETLENGTHX = 21;
@@ -26,7 +31,7 @@ namespace DonkeyKong
         private float m_playerSpeed = 100;
         private float m_enemySpeed = 50;
         private bool m_canStart = false;
-        public enum TILE_TYPE { BRIDGE, LADDER, WALL };
+        public enum TILE_TYPE { BRIDGE, LADDER, WALL, SPRINT };
         public static int g_tilesize;
         public static int g_tilesizeY;
         private SpriteBatch m_spriteBatch;
@@ -46,6 +51,7 @@ namespace DonkeyKong
         private Texture2D m_peachTex;
         private Texture2D m_DKTex;
         private Texture2D m_starAniTex;
+        private Texture2D m_mushroomTex;
         private const int M_ENEMYCOUNT = 7;
         private AutomatedSprite m_menuSprite;
         private AutomatedSprite m_peachSprite;
@@ -56,11 +62,21 @@ namespace DonkeyKong
         private Texture2D m_scoreTex;
         private Texture2D m_paulineAvaTex;
         private AutomatedSprite m_scoreSprites;
+        private AutomatedSprite m_hammer;
+        private Texture2D m_hammerTex;
+        private Texture2D m_hammerDownTex;
+        private AutomatedSprite[] m_pickupSprites;
         private  int m_score = 0;
         private bool m_doOnce = false;
         private bool m_doOnceMenu = false;
         private SpriteFont m_font;
+        private Texture2D m_sprintTex;
         string m_scoreString= "";
+        const int M_PICKUPS = 3;
+        int m_pickupscore = 0;
+        Vector2 m_dir = Vector2.Zero;
+        Timer m_hammerTimer;
+        const double M_HAMMERDURATION = 10.0;
         public override void Draw(GameTime gameTime)
         {
             switch (Instance.GetCurrentGameState())
@@ -69,17 +85,28 @@ namespace DonkeyKong
                     {
                         m_spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
                         m_menuSprite.DrawStill(m_winTex, m_spriteBatch);
-                        m_spriteBatch.DrawString(m_font, "HIGHSCORE\n"+m_scoreString, new Vector2(0, 0), Color.White);
+                        string name = "Mario";
+                        int score = m_score + m_pickupscore;
+                        if (ava == AVATAR.PAULINE)
+                        {
+                            name = "Pauline";
+                        }
+                        m_spriteBatch.DrawString(m_font, "HIGHSCORE\n"+m_scoreString+"\n"+ name+" "+ score, new Vector2(0, 0), Color.White);
                         m_spriteBatch.End();
                         break;
                     }
                 case GAMESTATE.LOSE:
                     {
-                        
-                        
+                        string name = "Mario";
+                        int score = m_score + m_pickupscore;
+                        if (ava == AVATAR.PAULINE)
+                        {
+                            name = "Pauline";
+                        }
+
                         m_spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
                         m_menuSprite.DrawStill(m_gameOverScreenTex, m_spriteBatch);
-                        m_spriteBatch.DrawString(m_font, "HIGHSCORE\n" + m_scoreString, new Vector2(0, 0), Color.White);
+                        m_spriteBatch.DrawString(m_font, "HIGHSCORE\n" + m_scoreString + "\n" + name + " " + score, new Vector2(0, 0), Color.White);
                         m_spriteBatch.End();
                         break;
                     }
@@ -110,12 +137,14 @@ namespace DonkeyKong
 
                         foreach (Tile tile in m_tiles)
                         {
-                            tile.DrawStill(m_spriteBatch);
+                            if(tile.g_draw)
+                                tile.DrawStill(m_spriteBatch);
                         }
 
                         foreach (Sprite s in m_spriteList)
                             s.DrawStill(m_spriteBatch);
-                        m_DKSprite.DrawStill(m_spriteBatch);
+                        if(m_DKSprite.g_draw)
+                            m_DKSprite.DrawStill(m_spriteBatch);
                         m_player.Draw(gameTime, m_spriteBatch);
                         m_peachSprite.DrawStill(m_spriteBatch);
 
@@ -211,7 +240,14 @@ namespace DonkeyKong
                                     break;
                                 }
                         }
-
+                        for (int i = 0; i < M_PICKUPS; i++)
+                        {
+                            if (m_pickupSprites[i].g_draw)
+                            {
+                                m_pickupSprites[i].DrawStill(m_spriteBatch);
+                            }
+                        }
+                        m_hammer.DrawStill(m_spriteBatch);
                         m_spriteBatch.End();
                         break;
                     }
@@ -223,6 +259,10 @@ namespace DonkeyKong
         }
         protected override void LoadContent()
         {
+            m_sprintTex = Game.Content.Load<Texture2D>("bridgeLadder");
+            m_hammerDownTex = Game.Content.Load<Texture2D>("hammerDown");
+            m_hammerTex = Game.Content.Load<Texture2D>("hammer");
+            m_mushroomTex = Game.Content.Load<Texture2D>("mushroom");
             m_font = Game.Content.Load<SpriteFont>("File");
             m_paulineAvaTex = Game.Content.Load<Texture2D>("paulineAva");
             m_scoreTex = Game.Content.Load<Texture2D>("cheese");
@@ -247,11 +287,23 @@ namespace DonkeyKong
             StreamReader sr = new StreamReader("../../../Content/map.txt");
             m_text = new List<string>();
             m_timer = new Timer();
-            
+            m_hammerTimer = new Timer();
             m_timer2 = new Timer();
             m_startAnimation = new AutomatedSprite(m_starAniTex, new Vector2(0,0),
                 new Point(m_starAniTex.Width/ M_ANISHEETLENGTHX, m_starAniTex.Height/ M_ANISHEETLENGTHY), 0, new Point(0, 0),
                new Point(M_ANISHEETLENGTHX, M_ANISHEETLENGTHY), 75.0f, 250);
+
+            m_hammer = new AutomatedSprite(m_hammerTex, new Vector2(0, 0),
+                new Point(m_hammerTex.Width, m_hammerTex.Height), 0, new Point(0, 0),
+               new Point(0, 0), 0, 0);
+
+            m_pickupSprites = new AutomatedSprite[M_PICKUPS];
+            for(int i=0; i<M_PICKUPS; i++)
+            {
+                m_pickupSprites[i] = new AutomatedSprite(m_mushroomTex, new Vector2(0, 0),
+                new Point(m_mushroomTex.Width, m_mushroomTex.Height), 0, new Point(0, 0),
+               new Point(0, 0), 0, 0);
+            }
             while (!sr.EndOfStream)
             {
                 m_text.Add(sr.ReadLine());
@@ -291,7 +343,16 @@ namespace DonkeyKong
                         * j), new Point(m_ladderTex.Width, m_ladderTex.Height), 0, new Point(0, 0), new Point(0, 0), 0.0f, 0, TILE_TYPE.LADDER);
 
                     }
+                    else if (m_text[j][i] == 's')
+                    {
 
+                        m_tiles[i, j] = new Tile(m_sprintTex, new
+                        Vector2(m_sprintTex.Width * i, m_sprintTex.Height
+                        * j), new Point(m_sprintTex.Width, m_sprintTex.Height), 0, new Point(0, 0), new Point(0, 0), 0.0f, 0, TILE_TYPE.SPRINT);
+
+                    }
+                    m_tiles[i, j].SetVelocity(new Vector2(0, 1));
+                    m_tiles[i, j].g_update = false;
                 }
 
             }
@@ -305,6 +366,7 @@ namespace DonkeyKong
             m_DKSprite = new AutomatedSprite(m_DKTex, new Vector2((Game1.G_W/2)- m_DKTex.Width, (Game1.G_H / 2)- m_DKTex.Height),
                 new Point(m_DKTex.Width, m_DKTex.Height), 0, new Point(m_DKTex.Width, m_DKTex.Height),
                new Point(m_DKTex.Width, m_DKTex.Height), 75.0f, 0);
+            m_DKSprite.SetMass(2.0f);
             for (int i=0; i< M_ENEMYCOUNT; i++)
             {
                 if (i == 0||i==1)
@@ -349,17 +411,18 @@ namespace DonkeyKong
                             sr.Close();
                             StreamWriter sw = new StreamWriter("../../../Content/score.txt");
                             string name = "Mario";
+                            int score = m_pickupscore + m_score;
                             if (ava == AVATAR.PAULINE)
                             {
                                 name = "Pauline";
                             }
                             if (m_scoreString.Length == 0)
                             {
-                                sw.Write(name + " " + m_score);
+                                sw.Write(name + " " + score);
                             }
                             else
                             {
-                                sw.Write(m_scoreString + "\n" + name + " " + m_score);
+                                sw.Write(m_scoreString + "\n" + name + " " + score);
                             }
                             sw.Close();
                             m_doOnce = true;
@@ -382,17 +445,18 @@ namespace DonkeyKong
                             sr.Close();
                             StreamWriter sw = new StreamWriter("../../../Content/score.txt");
                             string name = "Mario";
-                            if(ava==AVATAR.PAULINE)
+                            int score = m_pickupscore + m_score;
+                            if (ava==AVATAR.PAULINE)
                             {
                                 name = "Pauline";
                             }
                             if(m_scoreString.Length==0)
                             {
-                                sw.Write(name + " " + m_score);
+                                sw.Write(name + " " + score);
                             }
                             else
                             {
-                                sw.Write(m_scoreString + "\n" + name+" "+ m_score);
+                                sw.Write(m_scoreString + "\n" + name+" "+ score);
                             }
                             
                             sw.Close();
@@ -414,7 +478,16 @@ namespace DonkeyKong
                             {
                                 s.RandomizeSpeed();
                             }
-
+                            m_hammer.SetPosition(new Vector2(g_tilesize * 2, g_tilesizeY * 11));
+                            m_hammer.Update(gameTime, Game.Window.ClientBounds);
+                            m_pickupscore = 0;
+                            m_pickupSprites[0].SetPosition(new Vector2(g_tilesize * 18, g_tilesizeY * 15));
+                            m_pickupSprites[1].SetPosition(new Vector2(g_tilesize * 11, g_tilesizeY * 9));
+                            m_pickupSprites[2].SetPosition(new Vector2(g_tilesize * 10, g_tilesizeY * 11));
+                            m_pickupSprites[0].Update(gameTime, Game.Window.ClientBounds);
+                            m_pickupSprites[1].Update(gameTime, Game.Window.ClientBounds);
+                            m_pickupSprites[2].Update(gameTime, Game.Window.ClientBounds);
+                            
                             m_timer.ResetAndStart(m_randomTimeMin);
                             m_timer2.ResetAndStart(m_randomTimeMin);
                             m_player.g_lives = M_LIVES;
@@ -426,9 +499,11 @@ namespace DonkeyKong
                         if(Keyboard.GetState().IsKeyUp(Keys.Enter))
                         {
                             m_canStart = true;
+                            
                         }
                         if (Keyboard.GetState().IsKeyDown(Keys.Enter)&& m_canStart)
                         {
+                            m_hammerTimer.ResetAndStart(M_HAMMERDURATION);
                             Instance.SetCurrentGameState(GAMESTATE.GAME);
                             ava = AVATAR.MARIO;
                             m_player.SetTex(m_marioFrontTex);
@@ -438,6 +513,7 @@ namespace DonkeyKong
                         }
                         if (Keyboard.GetState().IsKeyDown(Keys.Space) && m_canStart)
                         {
+                            m_hammerTimer.ResetAndStart(M_HAMMERDURATION);
                             Instance.SetCurrentGameState(GAMESTATE.GAME);
                             ava = AVATAR.PAULINE;
                             m_player.SetTex(m_paulineAvaTex);
@@ -454,7 +530,99 @@ namespace DonkeyKong
                     }
                 case GAMESTATE.GAME:
                     {
+                        if(m_sprintsLoose>1)
+                        {
+                            m_DKFALL = true;
+                        }
+                        if(m_DKFALL)
+                        {
+                            m_DKSprite.SetVelocity(new Vector2(0, 1));
+                        }
+                        int countI = 0;
+                        foreach (Tile t in m_tiles)
+                        {
+                            if(t.g_update)
+                            {
+                                t.UpdateTile(gameTime, Game.Window.ClientBounds);
+                                int countj = 0;
+                                if(t.g_type == TILE_TYPE.SPRINT)
+                                {
+                                    m_sprintsLoose++;
+                                }
+                                foreach (Tile t1 in m_tiles)
+                                {
+                                    countj++;
+                                    if (countI == countj)
+                                    {
+                                        continue;
+                                    }
+                                    if (t.Collide(t1))
+                                    {
+                                        t.PhysicsCollide(t1);
+                                    }
+                                    if (t.Collide(m_DKSprite))
+                                    {
+                                        t.PhysicsCollide(m_DKSprite);
+                                    }
+                                }
+                            }
+
+                            countI++;
+                            
+                        }
+                        if (m_hammerState.HasFlag(HAMMER_STATE.DEFAULT))
+                        {
+                            if(m_player.Collide(m_hammer))
+                            {
+                                m_hammerState = HAMMER_STATE.PICKED_UP;
+                            }
+                        }
+                        if (m_hammerState.HasFlag(HAMMER_STATE.PICKED_UP)&&!m_hammerTimer.IsDone())
+                        {
+                            m_hammerTimer.Update(gameTime.ElapsedGameTime.TotalSeconds);
+
+                            if (m_player.direction!=Vector2.Zero)
+                            {
+                                m_dir = m_player.direction;
+                                
+                            }
+                            m_hammer.SetPosition(m_player.GetPos() + m_dir * m_hammerTex.Width);
+                            m_hammer.SetSpriteEffect(m_player.GetSpriteEffect());
+                            if (Keyboard.GetState().IsKeyDown(Keys.Space))
+                            {
+                                m_hammerState = m_hammerState & ~HAMMER_STATE.UP;
+                                m_hammerState |= HAMMER_STATE.DOWN;
+                                m_hammer.SetTex(m_hammerDownTex);
+                                foreach (AutomatedSprite e in m_spriteList)
+                                {
+                                    if (m_hammer.Collide(e))
+                                    {
+                                        e.SetDirection(new Vector2(e.direction.X * -1, e.direction.Y));
+                                        if(e.GetSpriteEffect()==SpriteEffects.None)
+                                        {
+                                            e.SetSpriteEffect(SpriteEffects.FlipHorizontally);
+                                        }
+                                        else
+                                        {
+                                            e.SetSpriteEffect(SpriteEffects.None);  
+                                        }
+                                        
+                                    }
+                                    
+                            }
+                            }
+                            else
+                            {
+                                m_hammerState = m_hammerState & ~HAMMER_STATE.DOWN;
+                                m_hammerState |= HAMMER_STATE.UP;
+                                m_hammer.SetTex(m_hammerTex);
+                            }
+                            
+                        }
+
                         
+
+
                         m_player.Update(gameTime, Game.Window.ClientBounds);
                         m_peachSprite.UpdatePeach(gameTime, Game.Window.ClientBounds, m_player);
                         foreach (AutomatedSprite s in m_spriteList)
@@ -463,13 +631,25 @@ namespace DonkeyKong
                             if (m_player.Collide(s))
                             {
                                 m_player.KnockBack(s.direction, Game.Window.ClientBounds);
-
+                                Instance.SetCurrentPlayState(PLAYSTATE.PUSHED);
 
                             }
                         }
+                        for (int i = 0; i < M_PICKUPS; i++)
+                        {
+                            if(m_pickupSprites[i].g_draw)
+                            {
+                                if(m_player.Collide(m_pickupSprites[i]))
+                                {
+                                    m_pickupSprites[i].g_draw = false;
+                                    Instance.SetCurrentPlayState(PLAYSTATE.WIN);
+                                    
+                                    m_pickupscore++;
+                                }
+                            }
+                        }
 
-                        
-                        
+
                         if (!m_timer2.IsDone())
                         {
                             m_timer2.Update(gameTime.ElapsedGameTime.TotalSeconds);
@@ -489,10 +669,12 @@ namespace DonkeyKong
                         if (m_player.Collide(m_DKSprite))
                         {
                             m_player.KnockBack(m_DKSprite.direction, Game.Window.ClientBounds);
+                            Instance.SetCurrentPlayState(PLAYSTATE.PUSHED);
                         }
                         if (m_player.g_lives <= 0)
                         {
                             Instance.SetCurrentGameState(GAMESTATE.LOSE);
+                            Instance.SetCurrentPlayState(PLAYSTATE.LOSE);
                         }
 
                         if (m_player.g_lives < m_hearts.Count)
@@ -504,6 +686,7 @@ namespace DonkeyKong
 
                         if (m_player.Collide(m_peachSprite)&&m_score==6)
                         {
+                            Instance.SetCurrentPlayState(PLAYSTATE.WIN);
                             Instance.SetCurrentGameState(GAMESTATE.WIN);
                         }
                         break;
@@ -527,5 +710,7 @@ namespace DonkeyKong
             return m_tiles[(int)vec.X / g_tilesize, (int)vec.Y / g_tilesize];
 
         }
-    }
+
+       
+}
 }

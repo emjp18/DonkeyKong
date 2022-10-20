@@ -10,6 +10,7 @@ namespace DonkeyKong
         public const int G_W = 920;
         public const int G_H = 680;
         private SpriteManager m_spriteManager;
+        private SoundManager m_soundManager;
         public Game1()
         {
             _graphics = new GraphicsDeviceManager(this);
@@ -21,7 +22,8 @@ namespace DonkeyKong
         {
             m_spriteManager = new SpriteManager(this);
             Components.Add(m_spriteManager);
-
+            m_soundManager = new SoundManager(this);
+            Components.Add(m_soundManager);
             base.Initialize();
         }
 
