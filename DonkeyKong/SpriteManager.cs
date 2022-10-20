@@ -13,8 +13,8 @@ namespace DonkeyKong
 {
     internal class SpriteManager : Microsoft.Xna.Framework.DrawableGameComponent
     {
-
-        int m_sprintsLoose = 0;
+        private bool m_sprintLoose1 = false;
+        private bool m_sprintLoose0 = false;
         private bool m_DKFALL = false;
         public enum HAMMER_STATE { DOWN = 1 << 2, UP = 1 << 1,PICKED_UP = 1<<0, DEFAULT = 0}
         private HAMMER_STATE m_hammerState = HAMMER_STATE.DEFAULT;
@@ -322,7 +322,7 @@ namespace DonkeyKong
 
                         m_tiles[i, j] = new Tile(m_wallTex, new
                         Vector2(m_wallTex.Width * i, m_wallTex.Height
-                        * j), new Point(m_wallTex.Width, m_wallTex.Height), 0, new Point(0, 0), new Point(0, 0), 0, 0, TILE_TYPE.WALL);
+                        * j), new Point(m_wallTex.Width, m_wallTex.Height), 0, new Point(0, 0), new Point(0, 0), 0.1f*j, 0, TILE_TYPE.WALL);
 
                     }
 
@@ -331,7 +331,7 @@ namespace DonkeyKong
 
                         m_tiles[i, j] = new Tile(m_floorTex, new
                         Vector2(m_floorTex.Width * i, m_floorTex.Height
-                        * j), new Point(m_floorTex.Width, m_floorTex.Height), 0, new Point(0, 0), new Point(0, 0), 0, 0, TILE_TYPE.BRIDGE);
+                        * j), new Point(m_floorTex.Width, m_floorTex.Height), 0, new Point(0, 0), new Point(0, 0), 1 * j, 0, TILE_TYPE.BRIDGE);
 
                     }
 
@@ -340,7 +340,7 @@ namespace DonkeyKong
 
                         m_tiles[i, j] = new Tile(m_ladderTex, new
                         Vector2(m_ladderTex.Width * i, m_ladderTex.Height
-                        * j), new Point(m_ladderTex.Width, m_ladderTex.Height), 0, new Point(0, 0), new Point(0, 0), 0.0f, 0, TILE_TYPE.LADDER);
+                        * j), new Point(m_ladderTex.Width, m_ladderTex.Height), 0, new Point(0, 0), new Point(0, 0), 1.0f * j, 0, TILE_TYPE.LADDER);
 
                     }
                     else if (m_text[j][i] == 's')
@@ -348,7 +348,7 @@ namespace DonkeyKong
 
                         m_tiles[i, j] = new Tile(m_sprintTex, new
                         Vector2(m_sprintTex.Width * i, m_sprintTex.Height
-                        * j), new Point(m_sprintTex.Width, m_sprintTex.Height), 0, new Point(0, 0), new Point(0, 0), 0.0f, 0, TILE_TYPE.SPRINT);
+                        * j), new Point(m_sprintTex.Width, m_sprintTex.Height), 0, new Point(0, 0), new Point(0, 0), 1.0f * j, 0, TILE_TYPE.SPRINT);
 
                     }
                     m_tiles[i, j].SetVelocity(new Vector2(0, 1));
@@ -530,7 +530,7 @@ namespace DonkeyKong
                     }
                 case GAMESTATE.GAME:
                     {
-                        if(m_sprintsLoose>1)
+                        if(m_sprintLoose1 && m_sprintLoose0)
                         {
                             m_DKFALL = true;
                         }
@@ -539,15 +539,21 @@ namespace DonkeyKong
                             m_DKSprite.SetVelocity(new Vector2(0, 1));
                         }
                         int countI = 0;
+                        int sprintNumber = 0;
                         foreach (Tile t in m_tiles)
                         {
-                            if(t.g_update)
+                            if(t.g_update|| m_DKFALL)
                             {
                                 t.UpdateTile(gameTime, Game.Window.ClientBounds);
                                 int countj = 0;
-                                if(t.g_type == TILE_TYPE.SPRINT)
+                                if(m_sprintLoose0)
                                 {
-                                    m_sprintsLoose++;
+                                    m_sprintLoose1 = (t.g_type == TILE_TYPE.SPRINT);
+                                    sprintNumber = countI;
+                                } 
+                                else if(sprintNumber!=countI&&!m_sprintLoose0)
+                                {
+                                    m_sprintLoose0 = (t.g_type == TILE_TYPE.SPRINT);
                                 }
                                 foreach (Tile t1 in m_tiles)
                                 {

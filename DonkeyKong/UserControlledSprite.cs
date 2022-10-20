@@ -201,7 +201,18 @@ namespace DonkeyKong
 
 
                 }
-                
+                else if (typeY == SpriteManager.TILE_TYPE.SPRINT)
+                {
+                    if (dir.Y == 0)
+                    {
+                        m_destination = newDestinationY;
+                        m_moving = true;
+                        m_climbingLadder = false;
+                        Tile tile = SpriteManager.GetTileAtPosition(newDestinationY);
+                        tile.g_update = true;
+                    }
+
+                }
 
             }
             else
