@@ -10,14 +10,14 @@ namespace DonkeyKong
     internal class AutomatedSprite : Sprite
     {
         
-        Vector2 m_direction;
+        Vector2 m_direction = Vector2.Zero;
         public AutomatedSprite(Texture2D textureImage, Vector2 position, Point frameSize,
             int collisionOffset, Point currentFrame, Point sheetSize, float speed,
             int millisecondsPerFrame)
             : base(textureImage, position, frameSize, collisionOffset, currentFrame,
             sheetSize, speed, millisecondsPerFrame)
         {
-            m_direction = new Vector2(Math.Clamp(m_speed,0,1), Math.Clamp(m_speed, 0, 1));
+            //m_direction = new Vector2(Math.Clamp(m_speed,0,1), Math.Clamp(m_speed, 0, 1));
         }
         public override Vector2 direction
         {
@@ -50,16 +50,14 @@ namespace DonkeyKong
         }
         public void UpdateTile(GameTime gameTime, Rectangle clientBounds)
         {
-            if(m_velocity!=Vector2.Zero)
-            {
-                m_velocity *= (float)gameTime.ElapsedGameTime.TotalSeconds * m_speed;
-                m_position += m_velocity;
-            }
-            if(m_position.Y>clientBounds.Y)
-            {
-                g_update = false;
-                g_draw = false;
-            }
+            m_velocity *= (float)gameTime.ElapsedGameTime.TotalSeconds * m_speed;
+            m_position += m_velocity;
+
+            //if (m_position.Y < clientBounds.Y)
+            //{
+            //    g_update = false;
+            //    g_draw = false;
+            //}
         }
         public void UpdateEnemyFire(GameTime gameTime, Rectangle clientBounds, Sprite DK)
         {
@@ -99,7 +97,7 @@ namespace DonkeyKong
         }
         public void UpdateDK(GameTime gameTime, Rectangle clientBounds)
         {
-            m_direction.Y = 0;
+            
             
             if (m_velocity != Vector2.Zero)
             {
@@ -108,19 +106,21 @@ namespace DonkeyKong
             }
             else
             {
+                m_direction.Y = 0;
                 m_position += m_direction * m_speed * (float)gameTime.ElapsedGameTime.TotalSeconds;
-            }
-            if (m_position.Y > clientBounds.Y)
-            {
-                g_update = false;
-                g_draw = false;
-            }
-            if (ClampWindow(clientBounds, ref m_position))
-            {
-                m_direction.X *= -1;
+                if (ClampWindow(clientBounds, ref m_position))
+                {
+                    m_direction.X *= -1;
 
+                }
             }
-            
+            //if (m_position.Y < clientBounds.Y)
+            //{
+            //    g_update = false;
+            //    g_draw = false;
+            //}
+
+
             base.Update(gameTime, clientBounds);
         }
         public void UpdatePeach(GameTime gameTime, Rectangle clientBounds, Sprite player)

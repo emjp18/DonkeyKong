@@ -12,7 +12,7 @@ namespace DonkeyKong
     {
         protected Vector2 m_velocity = Vector2.Zero;
         protected float m_r;
-        protected float m_mass = 1.0f;
+        protected float m_mass = 10.0f;
         public bool g_draw = true;
         public bool g_update = true;
         protected Texture2D m_textureImage;
@@ -42,9 +42,9 @@ namespace DonkeyKong
             m_sheetSize = sheetSize;
             m_speed = speed;
             m_millisecondsPerFrame = millisecondsPerFrame;
-            float a = (MathF.PI * (float)m_textureImage.Width * (float)m_textureImage.Height) / 4.0f;
-            m_r = MathF.Sqrt(a / MathF.PI);
-
+            //float a = (MathF.PI * (float)m_textureImage.Width * (float)m_textureImage.Height) / 4.0f;
+            //m_r = MathF.Sqrt(a / MathF.PI);
+            m_r = frameSize.X * MathF.Sqrt(MathF.PI);
         }
         public void SetVelocity(Vector2 vel)
         {
@@ -56,13 +56,13 @@ namespace DonkeyKong
         }
         public void PhysicsCollide(Sprite other)
         {
-            Vector2 direction = m_position - other.m_position;
-            float d = MathF.Sqrt(MathF.Pow(direction.X, 2) + MathF.Pow(direction.Y, 2)); //get direction between asteroid length.
+            Vector2 directionV = m_position - other.m_position;
+            float d = MathF.Sqrt(MathF.Pow(directionV.X, 2) + MathF.Pow(directionV.Y, 2)); //get direction between asteroid length.
 
             if ((m_r + other.m_r) >= d) //if the two r are smaller than the distance between them, they collide.
             {
                 Vector2 dirV = direction - other.direction;
-                if (Vector2.Dot(dirV, direction) > 0)
+                if (Vector2.Dot(dirV, directionV) > 0)
                 {
                     return;
                 }
@@ -71,6 +71,10 @@ namespace DonkeyKong
                     int e = 1;
                     Vector2 WA = m_mass * direction + other.m_mass * other.direction + e * other.m_mass * (other.direction - direction) / (m_mass + other.m_mass);
                     Vector2 WB = m_mass * direction + other.m_mass * other.direction + e * m_mass * (direction - other.direction) / (m_mass + other.m_mass);
+                    if(WA==Vector2.Zero)
+                    {
+                        int x = 1;
+                    }
                     SetVelocity(WA);
                     other.SetVelocity(WB);
                     return;

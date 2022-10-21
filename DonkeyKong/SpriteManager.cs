@@ -323,7 +323,7 @@ namespace DonkeyKong
                         m_tiles[i, j] = new Tile(m_wallTex, new
                         Vector2(m_wallTex.Width * i, m_wallTex.Height
                         * j), new Point(m_wallTex.Width, m_wallTex.Height), 0, new Point(0, 0), new Point(0, 0), 0.1f*j, 0, TILE_TYPE.WALL);
-
+                        m_tiles[i, j].g_draw = false;
                     }
 
                     else if (m_text[j][i] == 'f')
@@ -331,7 +331,7 @@ namespace DonkeyKong
 
                         m_tiles[i, j] = new Tile(m_floorTex, new
                         Vector2(m_floorTex.Width * i, m_floorTex.Height
-                        * j), new Point(m_floorTex.Width, m_floorTex.Height), 0, new Point(0, 0), new Point(0, 0), 1 * j, 0, TILE_TYPE.BRIDGE);
+                        * j), new Point(m_floorTex.Width, m_floorTex.Height), 0, new Point(0, 0), new Point(0, 0), 10, 0, TILE_TYPE.BRIDGE);
 
                     }
 
@@ -340,7 +340,7 @@ namespace DonkeyKong
 
                         m_tiles[i, j] = new Tile(m_ladderTex, new
                         Vector2(m_ladderTex.Width * i, m_ladderTex.Height
-                        * j), new Point(m_ladderTex.Width, m_ladderTex.Height), 0, new Point(0, 0), new Point(0, 0), 1.0f * j, 0, TILE_TYPE.LADDER);
+                        * j), new Point(m_ladderTex.Width, m_ladderTex.Height), 0, new Point(0, 0), new Point(0, 0), 0.1f * j, 0, TILE_TYPE.LADDER);
 
                     }
                     else if (m_text[j][i] == 's')
@@ -348,11 +348,13 @@ namespace DonkeyKong
 
                         m_tiles[i, j] = new Tile(m_sprintTex, new
                         Vector2(m_sprintTex.Width * i, m_sprintTex.Height
-                        * j), new Point(m_sprintTex.Width, m_sprintTex.Height), 0, new Point(0, 0), new Point(0, 0), 1.0f * j, 0, TILE_TYPE.SPRINT);
+                        * j), new Point(m_sprintTex.Width, m_sprintTex.Height), 0, new Point(0, 0), new Point(0, 0), 0.1f * j, 0, TILE_TYPE.SPRINT);
 
                     }
-                    m_tiles[i, j].SetVelocity(new Vector2(0, 1));
+                    m_tiles[i, j].SetDirection(new Vector2(0.1f, 1));
                     m_tiles[i, j].g_update = false;
+                    m_tiles[i, j].SetMass(m_random.Next(5, 20));
+                    
                 }
 
             }
@@ -366,7 +368,8 @@ namespace DonkeyKong
             m_DKSprite = new AutomatedSprite(m_DKTex, new Vector2((Game1.G_W/2)- m_DKTex.Width, (Game1.G_H / 2)- m_DKTex.Height),
                 new Point(m_DKTex.Width, m_DKTex.Height), 0, new Point(m_DKTex.Width, m_DKTex.Height),
                new Point(m_DKTex.Width, m_DKTex.Height), 75.0f, 0);
-            m_DKSprite.SetMass(2.0f);
+            m_DKSprite.SetMass(20.0f);
+            
             for (int i=0; i< M_ENEMYCOUNT; i++)
             {
                 if (i == 0||i==1)
@@ -384,7 +387,9 @@ namespace DonkeyKong
                     }
                 }
                 m_spriteList[i-2].SetSpriteEffect(SpriteEffects.FlipHorizontally);
-                
+                m_spriteList[i - 2].SetDirection(new Vector2(1, 0));
+
+
             }
             m_hearts = new List<AutomatedSprite>();
             m_scoreSprites = new AutomatedSprite(m_scoreTex, new Vector2(0, 0),
@@ -474,6 +479,51 @@ namespace DonkeyKong
                         m_doOnce = false;
                         if(!m_doOnceMenu)
                         {
+                            for (int i = 0; i < m_tiles.GetLength(0); i++)
+                            {
+
+                                for (int j = 0; j < m_tiles.GetLength(1); j++)
+                                {
+
+                                    if (m_tiles[i, j].g_type == TILE_TYPE.WALL)
+                                    {
+                                        m_tiles[i, j].SetPosition(new Vector2(m_wallTex.Width * i, m_wallTex.Height
+                                        * j));
+
+
+                                    }
+
+                                    else if (m_tiles[i, j].g_type == TILE_TYPE.BRIDGE)
+                                    {
+                                        m_tiles[i, j].SetPosition(new Vector2(m_floorTex.Width * i, m_floorTex.Height
+                                        * j));
+
+
+                                    }
+
+                                    else if (m_tiles[i, j].g_type == TILE_TYPE.LADDER)
+                                    {
+                                        m_tiles[i, j].SetPosition(new Vector2(m_ladderTex.Width * i, m_ladderTex.Height
+                                        * j));
+
+
+                                    }
+                                    else if (m_tiles[i, j].g_type == TILE_TYPE.SPRINT)
+                                    {
+                                        m_tiles[i, j].SetPosition(new Vector2(m_sprintTex.Width * i, m_sprintTex.Height
+                                        * j));
+                                       
+
+                                    }
+                                    m_tiles[i, j].SetDirection(new Vector2(0, 1));
+                                    m_tiles[i, j].SetMass(m_random.Next(5,15));
+                                    m_tiles[i, j].RandomizeSpeed();
+                                    m_tiles[i, j].g_update = false;
+                                }
+
+                            }
+
+
                             foreach (AutomatedSprite s in m_spriteList)
                             {
                                 s.RandomizeSpeed();
@@ -530,19 +580,27 @@ namespace DonkeyKong
                     }
                 case GAMESTATE.GAME:
                     {
-                        if(m_sprintLoose1 && m_sprintLoose0)
+                        if(m_sprintLoose1 && m_sprintLoose0||(Keyboard.GetState().IsKeyDown(Keys.Space)))
                         {
                             m_DKFALL = true;
                         }
                         if(m_DKFALL)
                         {
-                            m_DKSprite.SetVelocity(new Vector2(0, 1));
+                            //m_DKSprite.SetVelocity(new Vector2(0, 1));
+                            foreach (Tile t in m_tiles)
+                            {
+                                if(t.g_type==TILE_TYPE.BRIDGE/*&&t.GetPos().Y>g_tilesizeY*8*/)
+                                {
+                                    t.g_update = true;
+                                }
+                            }
                         }
                         int countI = 0;
                         int sprintNumber = 0;
                         foreach (Tile t in m_tiles)
                         {
-                            if(t.g_update|| m_DKFALL)
+                            ;
+                            if(t.g_update)
                             {
                                 t.UpdateTile(gameTime, Game.Window.ClientBounds);
                                 int countj = 0;
@@ -555,21 +613,24 @@ namespace DonkeyKong
                                 {
                                     m_sprintLoose0 = (t.g_type == TILE_TYPE.SPRINT);
                                 }
+                                if (m_DKSprite.Collide(t))
+                                {
+                                    m_DKSprite.PhysicsCollide(t);
+                                }
                                 foreach (Tile t1 in m_tiles)
                                 {
+                                    
                                     countj++;
                                     if (countI == countj)
                                     {
                                         continue;
                                     }
-                                    if (t.Collide(t1))
+                                    if (t1.Collide(t))
                                     {
-                                        t.PhysicsCollide(t1);
+                                        t1.PhysicsCollide(t);
                                     }
-                                    if (t.Collide(m_DKSprite))
-                                    {
-                                        t.PhysicsCollide(m_DKSprite);
-                                    }
+                                    
+
                                 }
                             }
 
