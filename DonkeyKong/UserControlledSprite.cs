@@ -17,8 +17,7 @@ namespace DonkeyKong
         private Vector2 m_destination;
         private bool m_moving = false;
         private Vector2 m_dir;
-        private Texture2D m_marioBackTex;
-        private Texture2D m_marioFrontTex;
+        
         public int g_lives = 5;
         private bool m_knocked = false;
         private SpriteManager.AVATAR m_ava;
@@ -28,8 +27,7 @@ namespace DonkeyKong
                 : base(textureImage, position, frameSize, collisionOffset, currentFrame,
                 sheetSize, speed, millisecondsPerFrame)
         {
-            m_marioBackTex = marioBack;
-            m_marioFrontTex = textureImage;
+            
         }
         public override void SetPosition(Vector2 pos)
         {
@@ -47,13 +45,13 @@ namespace DonkeyKong
                 if (Keyboard.GetState().IsKeyDown(Keys.Left))
                 {
                     inputDirection.X = -1;
-                    m_effect = SpriteEffects.None;
+                    m_effect = SpriteEffects.FlipHorizontally;
                 }
 
                 if (Keyboard.GetState().IsKeyDown(Keys.Right))
                 {
                     inputDirection.X = 1;
-                    m_effect = SpriteEffects.FlipHorizontally;
+                    m_effect = SpriteEffects.None;
                 }
 
                 if (Keyboard.GetState().IsKeyDown(Keys.Up))
@@ -122,47 +120,69 @@ namespace DonkeyKong
                     }
                 }
             }
-            
-            
-            if (!m_moving&&!m_knocked)
+            if (m_velocity != Vector2.Zero)
             {
-                m_dir = direction;
-                ChangeDirection(m_dir, clientBounds);
+                m_velocity *= (float)gameTime.ElapsedGameTime.TotalSeconds * m_speed;
+                m_position += m_velocity;
             }
             else
             {
-                m_position += (m_dir * m_speed *
-            (float)gameTime.ElapsedGameTime.TotalSeconds);
-                ClampWindow(clientBounds, ref m_position);
-                if (Vector2.Distance(m_position, m_destination) < 1)
+                if (!m_moving && !m_knocked)
                 {
-                    m_position = m_destination;
-                    m_moving = false;
-                    if (m_knocked)
-                        g_lives--;
-                    m_knocked = false;
-                }
-            }
-           
-            
-            base.Update(gameTime, clientBounds);
-        }
-        public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
-        {
-            if (m_ava == SpriteManager.AVATAR.MARIO)
-            {
-                if (m_climbingLadder)
-                {
-                    m_textureImage = m_marioBackTex;
+                    m_dir = direction;
+                    ChangeDirection(m_dir, clientBounds);
                 }
                 else
                 {
-                    m_textureImage = m_marioFrontTex;
+                    m_position += (m_dir * m_speed *
+                (float)gameTime.ElapsedGameTime.TotalSeconds);
+                    ClampWindow(clientBounds, ref m_position);
+                    if (Vector2.Distance(m_position, m_destination) < 1)
+                    {
+                        m_position = m_destination;
+                        m_moving = false;
+                        if (m_knocked)
+                            g_lives--;
+                        m_knocked = false;
+                    }
+                }
+            }
+            if(m_ava==SpriteManager.AVATAR.PAULINE)
+            {
+                m_currentFrame.Y = 1;
+            }
+            else
+            {
+                m_currentFrame.Y = 0;
+            }
+            if(m_climbingLadder)
+            {
+                m_currentFrame.X = 9;
+            }
+            else if(m_dir.X==0)
+            {
+                m_currentFrame.X = 0;
+            }
+            else
+            {
+                m_timeSinceLastFrame += gameTime.ElapsedGameTime.Milliseconds;
+                if (m_timeSinceLastFrame > m_millisecondsPerFrame)
+                {
+                    m_timeSinceLastFrame = 0;
+                    ++m_currentFrame.X;
+                    if (m_currentFrame.X >= 9)
+                    {
+                        m_currentFrame.X = 0;
+
+                    }
                 }
             }
             
-            base.Draw(gameTime, spriteBatch);
+
+
+
         }
+        
         public void SetAva(SpriteManager.AVATAR ava)
         {
             m_ava = ava;
@@ -244,11 +264,13 @@ namespace DonkeyKong
                 {
                     if (dir.Y == 0)
                     {
+                        
+                        Tile tile = SpriteManager.GetTileAtPosition(newDestination);
                         m_destination = newDestination;
                         m_moving = true;
                         m_climbingLadder = false;
-                        Tile tile = SpriteManager.GetTileAtPosition(newDestination);
                         tile.g_update = true;
+                        
                     }
 
                 }

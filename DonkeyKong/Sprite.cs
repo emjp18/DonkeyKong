@@ -42,9 +42,10 @@ namespace DonkeyKong
             m_sheetSize = sheetSize;
             m_speed = speed;
             m_millisecondsPerFrame = millisecondsPerFrame;
-            //float a = (MathF.PI * (float)m_textureImage.Width * (float)m_textureImage.Height) / 4.0f;
+            float a = (MathF.PI * (float)m_textureImage.Width * (float)m_textureImage.Height) / 4.0f;
             //m_r = MathF.Sqrt(a / MathF.PI);
-            m_r = frameSize.X * MathF.Sqrt(MathF.PI);
+            //m_r = frameSize.X * MathF.Sqrt(MathF.PI)*0.5f;
+            m_r = (float)Math.Sqrt(MathF.Pow(m_frameSize.X, 2) + MathF.Pow(m_frameSize.Y, 2)) * 0.5f;
         }
         public void SetVelocity(Vector2 vel)
         {
@@ -160,20 +161,12 @@ namespace DonkeyKong
             Color.White, 0, Vector2.Zero,
             1f, m_effect, 0);
         }
-        
+        public Point GetCurrentFrame() { return m_currentFrame; }
         public abstract Vector2 direction
         {
             get;
         }
-        public void Gravity(ref Vector2 position,ref bool isGrounded, GameTime gameTime)
-        {
-            isGrounded = position.Y + m_frameSize.Y % SpriteManager.g_tilesizeY == 0;
-
-            if(!isGrounded)
-            {
-                m_position.Y = (int)(m_position.Y += (float)gameTime.ElapsedGameTime.TotalSeconds);
-            }
-        }
+        
         public virtual void SetPosition(Vector2 pos)
         {
             m_position = pos;
