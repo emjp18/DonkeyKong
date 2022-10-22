@@ -262,10 +262,11 @@ namespace DonkeyKong
         }
         public void UpdatePeach(GameTime gameTime, Rectangle clientBounds, Sprite player, SpriteManager.AVATAR ava)
         {
-            m_direction = player.GetPos() - m_position;
-            m_direction.Y = 0;
-            m_direction.Normalize();
             
+            m_direction = player.GetPos() - m_position;
+            
+            m_direction.Normalize();
+            m_direction.Y = 0;
 
             if (ava == SpriteManager.AVATAR.PAULINE)
             {
