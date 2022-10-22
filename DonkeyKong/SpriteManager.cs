@@ -805,7 +805,7 @@ namespace DonkeyKong
                             }
                         }
                        
-                        if (m_player.Collide(m_DKSprite))
+                        if (m_player.Collide(m_DKSprite)&&!m_DKFALL)
                         {
                             m_player.KnockBack(m_DKSprite.direction, Game.Window.ClientBounds);
                             Instance.SetCurrentPlayState(PLAYSTATE.PUSHED);
