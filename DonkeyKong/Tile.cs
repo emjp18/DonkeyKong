@@ -11,6 +11,7 @@ namespace DonkeyKong
 {
     internal class Tile : AutomatedSprite
     {
+        public bool g_marked = false;
         public TILE_TYPE g_type;
         public Tile(Texture2D textureImage, Vector2 position, Point frameSize,
             int collisionOffset, Point currentFrame, Point sheetSize, float speed,

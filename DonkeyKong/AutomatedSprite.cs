@@ -266,6 +266,7 @@ namespace DonkeyKong
             m_direction = player.GetPos() - m_position;
             
             m_direction.Normalize();
+            m_direction.Round();
             m_direction.Y = 0;
 
             if (ava == SpriteManager.AVATAR.PAULINE)

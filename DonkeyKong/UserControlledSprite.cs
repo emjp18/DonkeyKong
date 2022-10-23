@@ -7,6 +7,8 @@ using Microsoft.VisualBasic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using MonoGame.Framework.Utilities.Deflate;
+
 namespace DonkeyKong
 {
     internal class UserControlledSprite : Sprite
@@ -17,7 +19,7 @@ namespace DonkeyKong
         private Vector2 m_destination;
         private bool m_moving = false;
         private Vector2 m_dir;
-        
+        private List<Tile> m_ladders;
         public int g_lives = 5;
         private bool m_knocked = false;
         private SpriteManager.AVATAR m_ava;
@@ -29,11 +31,116 @@ namespace DonkeyKong
         {
             
         }
+        public void SetLadders(List<Tile> ladders)
+        {
+            m_ladders = ladders;
+        }
         public override void SetPosition(Vector2 pos)
         {
             m_destination = pos;
             m_moving = false;
             base.SetPosition(pos);
+        }
+        public Vector2 AIDir( List<AutomatedSprite> enemies)
+        {
+            Vector2 currentPos = m_position;
+            int x = m_frameSize.X - SpriteManager.g_tilesize;
+            int y = m_frameSize.Y - SpriteManager.g_tilesizeY;
+            currentPos.X += x;
+            currentPos.Y += y;
+            Vector2 dir = Vector2.Zero;
+            float shortestLadderPath = float.MaxValue;
+            float shortestEnemyPath = float.MaxValue;
+            Vector2 ladderPos = Vector2.Zero;
+            bool enemyToleft = false;
+            foreach (Tile ladder in m_ladders)
+            {
+                if (ladder.g_marked)
+                    continue;
+                if(ladder.GetPos().Y==currentPos.Y)
+                {
+                    float d = Vector2.Distance(ladder.GetPos(), currentPos);
+                    if (d < shortestLadderPath)
+                    {
+                        shortestLadderPath = d;
+                        ladderPos = ladder.GetPos();
+
+                    }
+                    if (shortestLadderPath == 0)
+                    {
+                        break;
+                    }
+                }
+                
+            }
+            foreach (AutomatedSprite enemy in enemies)
+            {
+                if (enemy.GetPos().Y == currentPos.Y)
+                {
+                    float d = Vector2.Distance(enemy.GetPos(), currentPos);
+                    if(d< shortestEnemyPath)
+                    {
+                        shortestEnemyPath = d;
+                        if (enemy.GetPos().X > currentPos.X) 
+                        {
+                            enemyToleft = false;
+                        }
+                        else
+                        {
+                            enemyToleft = true;
+                        }
+                    }
+                }
+            }
+            if (shortestLadderPath == 0)
+            {
+                dir.X = 0;
+                
+
+                if (SpriteManager.GetTileTypeAtPosition(m_position) == SpriteManager.TILE_TYPE.LADDER)
+                {
+                    dir.Y = -1;
+                    SpriteManager.GetTileAtPosition(m_position).g_marked = true;
+                }
+                else
+                {
+                    dir.Y = 0;
+                    dir.X = -1;
+
+                }
+            }
+            else if(shortestEnemyPath<shortestLadderPath)
+            {
+                if(enemyToleft)
+                {
+                    dir.X = 1;
+                }
+                else
+                {
+                    dir.X = -1;
+                }
+                foreach (Tile ladder in m_ladders)
+                {
+                    if(ladder.g_marked)
+                    {
+                        ladder.g_marked = false;
+                    }
+                    if (SpriteManager.GetTileTypeAtPosition(m_position) == SpriteManager.TILE_TYPE.LADDER)
+                    {
+                        dir.X = 0;
+                    }
+                }
+            }
+            else
+            {
+                
+                dir = ladderPos - m_position;
+                dir.Y = 0;
+                dir.Normalize();
+                dir.Round();
+            }
+            
+            return dir;
         }
         public override Vector2 direction
         {
@@ -70,6 +177,7 @@ namespace DonkeyKong
                 return inputDirection;
             }
         }
+        //Add function to correct position if knockback changes it.
         public bool KnockBack(Vector2 direction, Rectangle clientBounds)
         {
             Math.Clamp(direction.X, 0,1);
@@ -89,7 +197,7 @@ namespace DonkeyKong
             return false;
 
         }
-        public override void Update(GameTime gameTime, Rectangle clientBounds)
+        public void UpdateMario(GameTime gameTime, Rectangle clientBounds, List<AutomatedSprite> enemies)
         {
             if(m_position.Y > SpriteManager.g_tilesizeY * 2)
             {
@@ -129,7 +237,23 @@ namespace DonkeyKong
             {
                 if (!m_moving && !m_knocked)
                 {
-                    m_dir = direction;
+                    if(GameStateManager.Instance.GetCurrentGameState()==GameStateManager.GAMESTATE.ATTRACT)
+                    {
+                        m_dir = AIDir(enemies);
+                        if(m_dir.X>0)
+                        {
+                            m_effect = SpriteEffects.None;
+                        }
+                        else
+                        {
+                            m_effect = SpriteEffects.FlipHorizontally;
+                        }
+                    }
+                    else
+                    {
+                        m_dir = direction;
+                    }
+                    
                     ChangeDirection(m_dir, clientBounds);
                 }
                 else

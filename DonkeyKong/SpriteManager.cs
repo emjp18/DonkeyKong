@@ -77,6 +77,8 @@ namespace DonkeyKong
         int m_pickupscore = 0;
         Vector2 m_dir = Vector2.Zero;
         Timer m_hammerTimer;
+        Timer m_attracktTimer;
+        List<Tile> m_ladders = new List<Tile>();
         const double M_HAMMERDURATION = 10.0;
         public override void Draw(GameTime gameTime)
         {
@@ -253,6 +255,127 @@ namespace DonkeyKong
                         m_spriteBatch.End();
                         break;
                     }
+                case GAMESTATE.ATTRACT:
+                    {
+                        m_spriteBatch.Begin();
+                        if (m_DKSprite.g_draw)
+                            m_DKSprite.Draw(gameTime, m_spriteBatch);
+                        foreach (Tile tile in m_tiles)
+                        {
+                            if (tile.g_draw)
+                                tile.DrawStill(m_spriteBatch);
+                        }
+
+                        foreach (Sprite s in m_spriteList)
+                            s.DrawStill(m_spriteBatch);
+
+                        m_player.Draw(gameTime, m_spriteBatch);
+                        m_peachSprite.Draw(gameTime, m_spriteBatch);
+
+
+                        foreach (Sprite heart in m_hearts)
+                        {
+                            heart.DrawStill(m_spriteBatch);
+                        }
+                        switch (m_player.g_levelReached)
+                        {
+                            case UserControlledSprite.LEVELHEIGHT.ONE:
+                                {
+
+                                    m_score = 0;
+                                    break;
+                                }
+                            case UserControlledSprite.LEVELHEIGHT.TWO:
+                                {
+                                    m_scoreSprites.SetPosition(new Vector2(Game1.G_W - m_scoreTex.Width, 0));
+                                    m_scoreSprites.DrawStill(m_spriteBatch);
+
+                                    m_score = 1;
+                                    break;
+                                }
+                            case UserControlledSprite.LEVELHEIGHT.THREE:
+                                {
+                                    m_scoreSprites.SetPosition(new Vector2(Game1.G_W - m_scoreTex.Width, 0));
+                                    m_scoreSprites.DrawStill(m_spriteBatch);
+                                    m_scoreSprites.SetPosition(new Vector2(Game1.G_W - m_scoreTex.Width * 2, 0));
+                                    m_scoreSprites.DrawStill(m_spriteBatch);
+
+                                    m_score = 2;
+                                    break;
+                                }
+                            case UserControlledSprite.LEVELHEIGHT.FOUR:
+                                {
+                                    m_scoreSprites.SetPosition(new Vector2(Game1.G_W - m_scoreTex.Width, 0));
+                                    m_scoreSprites.DrawStill(m_spriteBatch);
+                                    m_scoreSprites.SetPosition(new Vector2(Game1.G_W - m_scoreTex.Width * 2, 0));
+                                    m_scoreSprites.DrawStill(m_spriteBatch);
+                                    m_scoreSprites.SetPosition(new Vector2(Game1.G_W - m_scoreTex.Width * 3, 0));
+                                    m_scoreSprites.DrawStill(m_spriteBatch);
+
+                                    m_score = 3;
+                                    break;
+                                }
+                            case UserControlledSprite.LEVELHEIGHT.FIVE:
+                                {
+                                    m_scoreSprites.SetPosition(new Vector2(Game1.G_W - m_scoreTex.Width, 0));
+                                    m_scoreSprites.DrawStill(m_spriteBatch);
+                                    m_scoreSprites.SetPosition(new Vector2(Game1.G_W - m_scoreTex.Width * 2, 0));
+                                    m_scoreSprites.DrawStill(m_spriteBatch);
+                                    m_scoreSprites.SetPosition(new Vector2(Game1.G_W - m_scoreTex.Width * 3, 0));
+                                    m_scoreSprites.DrawStill(m_spriteBatch);
+                                    m_scoreSprites.SetPosition(new Vector2(Game1.G_W - m_scoreTex.Width * 4, 0));
+                                    m_scoreSprites.DrawStill(m_spriteBatch);
+
+                                    m_score = 4;
+                                    break;
+                                }
+                            case UserControlledSprite.LEVELHEIGHT.SIX:
+                                {
+                                    m_scoreSprites.SetPosition(new Vector2(Game1.G_W - m_scoreTex.Width, 0));
+                                    m_scoreSprites.DrawStill(m_spriteBatch);
+                                    m_scoreSprites.SetPosition(new Vector2(Game1.G_W - m_scoreTex.Width * 2, 0));
+                                    m_scoreSprites.DrawStill(m_spriteBatch);
+                                    m_scoreSprites.SetPosition(new Vector2(Game1.G_W - m_scoreTex.Width * 3, 0));
+                                    m_scoreSprites.DrawStill(m_spriteBatch);
+                                    m_scoreSprites.SetPosition(new Vector2(Game1.G_W - m_scoreTex.Width * 4, 0));
+                                    m_scoreSprites.DrawStill(m_spriteBatch);
+                                    m_scoreSprites.SetPosition(new Vector2(Game1.G_W - m_scoreTex.Width * 5, 0));
+                                    m_scoreSprites.DrawStill(m_spriteBatch);
+
+                                    m_score = 5;
+                                    break;
+                                }
+                            case UserControlledSprite.LEVELHEIGHT.SEVEN:
+                                {
+                                    m_score = 6;
+                                    m_scoreSprites.SetPosition(new Vector2(Game1.G_W - m_scoreTex.Width, 0));
+                                    m_scoreSprites.DrawStill(m_spriteBatch);
+                                    m_scoreSprites.SetPosition(new Vector2(Game1.G_W - m_scoreTex.Width * 2, 0));
+                                    m_scoreSprites.DrawStill(m_spriteBatch);
+                                    m_scoreSprites.SetPosition(new Vector2(Game1.G_W - m_scoreTex.Width * 3, 0));
+                                    m_scoreSprites.DrawStill(m_spriteBatch);
+                                    m_scoreSprites.SetPosition(new Vector2(Game1.G_W - m_scoreTex.Width * 4, 0));
+                                    m_scoreSprites.DrawStill(m_spriteBatch);
+                                    m_scoreSprites.SetPosition(new Vector2(Game1.G_W - m_scoreTex.Width * 5, 0));
+                                    m_scoreSprites.DrawStill(m_spriteBatch);
+                                    m_scoreSprites.SetPosition(new Vector2(Game1.G_W - m_scoreTex.Width * 6, 0));
+                                    m_scoreSprites.DrawStill(m_spriteBatch);
+
+                                    break;
+                                }
+                        }
+                        for (int i = 0; i < M_PICKUPS; i++)
+                        {
+                            if (m_pickupSprites[i].g_draw)
+                            {
+                                m_pickupSprites[i].DrawStill(m_spriteBatch);
+                            }
+                        }
+                        if (m_hammer.g_draw)
+                            m_hammer.DrawStill(m_spriteBatch);
+                        m_spriteBatch.End();
+                        break;
+                    }
             }
 
 
@@ -291,6 +414,8 @@ namespace DonkeyKong
             m_timer = new Timer();
             m_hammerTimer = new Timer();
             m_timer2 = new Timer();
+            m_attracktTimer = new Timer();
+            m_attracktTimer.ResetAndStart(5);
             m_startAnimation = new AutomatedSprite(m_starAniTex, new Vector2(0,0),
                 new Point(m_starAniTex.Width/ M_ANISHEETLENGTHX, m_starAniTex.Height/ M_ANISHEETLENGTHY), 0, new Point(0, 0),
                new Point(M_ANISHEETLENGTHX, M_ANISHEETLENGTHY), 75.0f, 250);
@@ -343,7 +468,7 @@ namespace DonkeyKong
                         m_tiles[i, j] = new Tile(m_ladderTex, new
                         Vector2(m_ladderTex.Width * i, m_ladderTex.Height
                         * j), new Point(m_ladderTex.Width, m_ladderTex.Height), 0, new Point(0, 0), new Point(0, 0), 0.1f * j, 0, TILE_TYPE.LADDER);
-
+                        m_ladders.Add(m_tiles[i, j]);
                     }
                     else if (m_text[j][i] == 's')
                     {
@@ -480,9 +605,16 @@ namespace DonkeyKong
                     }
                 case GAMESTATE.MENU:
                     {
+                        m_player.SetLadders(m_ladders);
+                        m_attracktTimer.Update(gameTime.ElapsedGameTime.TotalSeconds);
+                        if(m_attracktTimer.IsDone())
+                        {
+                            Instance.SetCurrentGameState(GAMESTATE.ATTRACT);
+                        }
                         m_doOnce = false;
                         if(!m_doOnceMenu)
                         {
+                            
                             for (int i = 0; i < m_tiles.GetLength(0); i++)
                             {
 
@@ -758,7 +890,7 @@ namespace DonkeyKong
                         }
 
 
-                        m_player.Update(gameTime, Game.Window.ClientBounds);
+                        m_player.UpdateMario(gameTime, Game.Window.ClientBounds,m_spriteList);
                         if(m_ava==AVATAR.MARIO)
                             m_peachSprite.UpdatePeach(gameTime, Game.Window.ClientBounds, m_player, AVATAR.PAULINE);
                         else
@@ -827,6 +959,76 @@ namespace DonkeyKong
                         {
                             Instance.SetCurrentPlayState(PLAYSTATE.WIN);
                             Instance.SetCurrentGameState(GAMESTATE.WIN);
+                        }
+                        break;
+                    }
+                case GAMESTATE.ATTRACT:
+                    {
+                        m_player.UpdateMario(gameTime, Game.Window.ClientBounds, m_spriteList);
+                        if (m_ava == AVATAR.MARIO)
+                            m_peachSprite.UpdatePeach(gameTime, Game.Window.ClientBounds, m_player, AVATAR.PAULINE);
+                        else
+                            m_peachSprite.UpdatePeach(gameTime, Game.Window.ClientBounds, m_player, AVATAR.MARIO);
+                        foreach (AutomatedSprite s in m_spriteList)
+                        {
+                            s.UpdateEnemyFire(gameTime, Game.Window.ClientBounds, m_DKSprite);
+                            if (m_player.Collide(s))
+                            {
+                                m_player.KnockBack(s.direction, Game.Window.ClientBounds);
+                                Instance.SetCurrentPlayState(PLAYSTATE.PUSHED);
+
+                            }
+                        }
+                        for (int i = 0; i < M_PICKUPS; i++)
+                        {
+                            if (m_pickupSprites[i].g_draw)
+                            {
+                                if (m_player.Collide(m_pickupSprites[i]))
+                                {
+                                    m_pickupSprites[i].g_draw = false;
+                                    Instance.SetCurrentPlayState(PLAYSTATE.WIN);
+
+                                    m_pickupscore++;
+                                }
+                            }
+                        }
+
+                        m_DKSprite.UpdateDK(gameTime, Game.Window.ClientBounds);
+                        if (!m_timer2.IsDone())
+                        {
+                            m_timer2.Update(gameTime.ElapsedGameTime.TotalSeconds);
+
+                        }
+                        else
+                        {
+                            m_DKSprite.SetDirection(new Vector2(0, 0));
+                            m_timer.Update(gameTime.ElapsedGameTime.TotalSeconds);
+                            if (m_timer.IsDone())
+                            {
+                                m_timer.ResetAndStart(m_random.Next(m_randomTimeMax));
+                                m_DKSprite.SetDirection(new Vector2(m_random.Next(-1, 1), 0));
+                                m_timer2.ResetAndStart(m_random.Next(m_randomTimeMax));
+                            }
+                        }
+
+                        if (m_player.Collide(m_DKSprite) && !m_DKFALL)
+                        {
+                            m_player.KnockBack(m_DKSprite.direction, Game.Window.ClientBounds);
+                            Instance.SetCurrentPlayState(PLAYSTATE.PUSHED);
+                        }
+                        
+
+                        if (m_player.g_lives < m_hearts.Count)
+                        {
+                            m_hearts.RemoveAt(m_player.g_lives);
+
+                        }
+
+
+                        if (m_score == 6|| m_player.g_lives <= 0|| Keyboard.GetState().IsKeyDown(Keys.Enter))
+                        {
+                            m_attracktTimer.ResetAndStart(5);
+                            Instance.SetCurrentGameState(GAMESTATE.MENU);
                         }
                         break;
                     }
