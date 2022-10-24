@@ -606,15 +606,25 @@ namespace DonkeyKong
                 case GAMESTATE.MENU:
                     {
                         m_player.SetLadders(m_ladders);
-                        m_attracktTimer.Update(gameTime.ElapsedGameTime.TotalSeconds);
-                        if(m_attracktTimer.IsDone())
-                        {
-                            Instance.SetCurrentGameState(GAMESTATE.ATTRACT);
-                        }
+                        ////m_attracktTimer.Update(gameTime.ElapsedGameTime.TotalSeconds);
+                        //if(m_attracktTimer.IsDone())
+                        //{
+                        //    Instance.SetCurrentGameState(GAMESTATE.ATTRACT);
+                        //}
+                        m_sprintLoose1 = false;
+                        m_sprintLoose0 = false;
+                        m_DKFALL = false;
                         m_doOnce = false;
-                        if(!m_doOnceMenu)
+                        m_sprintNumber = -1;
+                        if (!m_doOnceMenu)
                         {
-                            
+                            m_DKSprite.SetSpriteEffect(SpriteEffects.None);
+                            m_player.SetVelocity(new Vector2(0, 0));
+                            m_DKSprite.SetVelocity(new Vector2(0, 0));
+                            for (int p = 0; p < M_PICKUPS; p++)
+                            {
+                                m_pickupSprites[p].g_draw = true;
+                            }
                             for (int i = 0; i < m_tiles.GetLength(0); i++)
                             {
 
@@ -655,6 +665,8 @@ namespace DonkeyKong
                                     m_tiles[i, j].SetMass(m_random.Next(5,15));
                                     m_tiles[i, j].RandomizeSpeed();
                                     m_tiles[i, j].g_update = false;
+                                    if (m_tiles[i, j].g_type != TILE_TYPE.WALL)
+                                        m_tiles[i, j].g_draw = true;
                                 }
 
                             }
@@ -681,6 +693,7 @@ namespace DonkeyKong
                             foreach (AutomatedSprite s in m_spriteList)
                             {
                                 s.RandomizeSpeed();
+                                s.SetVelocity(new Vector2(0, 0));
                             }
                             m_sprintNumber = 0;
                             m_hammer.SetPosition(new Vector2(g_tilesize * 2, g_tilesizeY * 11));
@@ -901,7 +914,7 @@ namespace DonkeyKong
                             if (m_player.Collide(s))
                             {
                                 m_player.KnockBack(s.direction, Game.Window.ClientBounds);
-                                Instance.SetCurrentPlayState(PLAYSTATE.PUSHED);
+                                
 
                             }
                         }
@@ -940,7 +953,7 @@ namespace DonkeyKong
                         if (m_player.Collide(m_DKSprite)&&!m_DKFALL)
                         {
                             m_player.KnockBack(m_DKSprite.direction, Game.Window.ClientBounds);
-                            Instance.SetCurrentPlayState(PLAYSTATE.PUSHED);
+                            
                         }
                         if (m_player.g_lives <= 0||m_player.GetPos().Y>g_tilesizeY*17)
                         {
@@ -975,7 +988,7 @@ namespace DonkeyKong
                             if (m_player.Collide(s))
                             {
                                 m_player.KnockBack(s.direction, Game.Window.ClientBounds);
-                                Instance.SetCurrentPlayState(PLAYSTATE.PUSHED);
+                                
 
                             }
                         }

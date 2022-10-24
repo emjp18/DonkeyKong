@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Framework.Utilities.Deflate;
+using static DonkeyKong.GameStateManager;
 
 namespace DonkeyKong
 {
@@ -266,7 +267,11 @@ namespace DonkeyKong
                         m_position = m_destination;
                         m_moving = false;
                         if (m_knocked)
+                        {
                             g_lives--;
+                            Instance.SetCurrentPlayState(PLAYSTATE.PUSHED);
+                        }
+                            
                         m_knocked = false;
                     }
                 }
