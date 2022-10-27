@@ -1,20 +1,4 @@
 Pauline 8
 Mario 2
-Mario 0
-Pauline 0
-Mario 3
-Mario 0
-Mario 9
-Pauline 9
-Mario 3
-Mario 0
-Mario 0
-Mario 0
-Mario 0
-Mario 0
-Mario 3
-Mario 3
-Mario 9
-Mario 3
-Mario 9
-Mario 9
+
+Mario 1

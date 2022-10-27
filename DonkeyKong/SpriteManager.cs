@@ -756,7 +756,7 @@ namespace DonkeyKong
                             foreach (Tile t in m_tiles)
                             {
                                 if(t.g_type==TILE_TYPE.BRIDGE&&t.GetPos().Y>g_tilesizeY*4&&(
-                                    t.GetPos().X > g_tilesize*3&& t.GetPos().X < g_tilesize * 18))
+                                    t.GetPos().X > g_tilesize*5&& t.GetPos().X < g_tilesize * 16))
                                 {
                                     t.g_update = true;
                                 }
@@ -773,8 +773,8 @@ namespace DonkeyKong
                                     m_pickupSprites[p].g_draw = false;
                                 }
                             }
-                            if((m_player.GetPos().X>g_tilesize*3 && m_player.GetPos().X < g_tilesize * 18) && 
-                                m_player.GetPos().Y > g_tilesizeY * 4
+                            if((m_player.GetPos().X>g_tilesize*6 && m_player.GetPos().X < g_tilesize * 20) && 
+                                m_player.GetPos().Y > g_tilesizeY * 5
                                )
                             {
                                 m_player.SetVelocity(new Vector2(0, 1));
